@@ -1,0 +1,82 @@
+{
+  "name": "speckit-atlas",
+  "displayName": "SpecKit Atlas",
+  "description": "Render the relationships between GitHub Spec Kit specs alongside implementation status.",
+  "version": "0.0.1",
+  "publisher": "PLACEHOLDER-PUBLISHER",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "workspaceContains:**/.specify/",
+    "workspaceContains:**/specs/*/spec.md"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "speckitAtlas",
+          "title": "SpecKit Atlas",
+          "icon": "media/atlas-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "speckitAtlas": [
+        {
+          "id": "speckitAtlas.mapView",
+          "name": "Map",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "speckitAtlas.openMap",
+        "title": "SpecKit Atlas: Open Map"
+      },
+      {
+        "command": "speckitAtlas.refresh",
+        "title": "SpecKit Atlas: Refresh"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build -- --production",
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.core.json",
+    "lint": "eslint src test",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "compile:tests": "tsc -p tsconfig.test.json",
+    "test:core": "npm run compile:tests && node --test \"out/test/core/**/*.test.js\"",
+    "test:contracts": "npm run build && npm run compile:tests && node --test \"out/test/contracts/**/*.test.js\"",
+    "test:integration": "npm run build && npm run compile:tests && node out/test/integration/runTest.js",
+    "test": "npm run test:core && npm run test:contracts && npm run test:integration",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0"
+  }
+}

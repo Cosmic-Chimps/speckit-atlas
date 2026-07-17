@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+media/webview.js
+*.vsix
+package-lock.json
+fixtures/
+# Spec Kit-generated documents are managed by the speckit tooling, not our format gate.
+specs/
+.specify/
+CLAUDE.md

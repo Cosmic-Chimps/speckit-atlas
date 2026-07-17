@@ -1,0 +1,18 @@
+{
+  "workflow": "speckit",
+  "specName": "001-extension-scaffold",
+  "branch": "001-extension-scaffold",
+  "selectedAt": "2026-07-17T18:22:16.395Z",
+  "currentStep": "specify",
+  "status": "completed",
+  "history": [
+    {
+      "step": "specify",
+      "substep": null,
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-17T18:53:07.297Z"
+    }
+  ],
+  "telemetryInstanceId": "24bc8317-8a1e-401a-a8c5-016811f0b1d6"
+}
