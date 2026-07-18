@@ -9,6 +9,10 @@ export interface WebviewHtmlInputs {
   readonly nonce: string;
   readonly scriptUri: string;
   readonly styleUri: string;
+  /** Body markup (static, no inline handlers). Defaults to the welcome/app container. */
+  readonly body?: string;
+  /** Document title. */
+  readonly title?: string;
 }
 
 /** The Content-Security-Policy string. `default-src 'none'` + nonce; no remote origins. */
@@ -23,6 +27,8 @@ export function buildCspContent(cspSource: string, nonce: string): string {
 
 export function buildWebviewHtml(inputs: WebviewHtmlInputs): string {
   const csp = buildCspContent(inputs.cspSource, inputs.nonce);
+  const body = inputs.body ?? `<main id="app" aria-live="polite"></main>`;
+  const title = inputs.title ?? "SpecKit Atlas";
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -30,10 +36,10 @@ export function buildWebviewHtml(inputs: WebviewHtmlInputs): string {
     <meta http-equiv="Content-Security-Policy" content="${csp}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="${inputs.styleUri}" rel="stylesheet" nonce="${inputs.nonce}" />
-    <title>SpecKit Atlas</title>
+    <title>${title}</title>
   </head>
   <body>
-    <main id="app" aria-live="polite"></main>
+    ${body}
     <script nonce="${inputs.nonce}" src="${inputs.scriptUri}"></script>
   </body>
 </html>`;

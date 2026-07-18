@@ -44,6 +44,7 @@ python3 .specify/extensions/companion/scripts/write-context.py --feature-dir spe
 ## Graceful Degradation
 
 The script is best-effort and never fails the host command:
+
 - If `python3` is missing, skip with the warning above.
 - If the active feature directory cannot be resolved, the script prints a warning
   to stderr and exits 0 without writing.

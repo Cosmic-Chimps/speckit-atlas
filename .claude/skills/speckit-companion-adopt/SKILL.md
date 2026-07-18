@@ -29,6 +29,7 @@ The argument is the **one code area** to adopt — a directory (e.g. `src/billin
 List the files under the named area. From their **surface only** — exported symbols, route registrations, component props, public function/class signatures, config keys — propose a **small tree of capabilities for just this area**. Most areas are one capability; a clearly layered area (e.g. a parent module with a distinct nested sub-area) may warrant a leaf capability plus its parent, mirroring the resolver's most-specific-first model. Never propose a capability outside the named area.
 
 For each proposed capability, derive:
+
 - a **name** (a short slug for the area, e.g. `billing`),
 - a **match** glob from the area path (e.g. adopting `src/billing/` → `["src/billing/**"]`; a nested leaf → `["src/billing/invoices/**"]`),
 - the default **spec** path `capabilities/<name>/spec.md` (centralized).
@@ -46,7 +47,7 @@ Write the spec **well-formed** (per the well-formed-creation rule): a title line
 3. **`## Requirements`** — the functional requirements you derived from the surface. Each requirement is a single MUST/SHOULD statement, and each carries a confidence tag:
    - **`observed`** — derivable directly from the code surface (an exported function, a route, a prop, a signature). Cite the surface lightly in the requirement.
    - **`inferred`** — extrapolated beyond the surface (likely intent you could not confirm from signatures alone).
-   Write the tag as a trailing bracket, e.g. `- **FR-001** Users can create an invoice. [observed]`.
+     Write the tag as a trailing bracket, e.g. `- **FR-001** Users can create an invoice. [observed]`.
 4. **`[NEEDS CLARIFICATION: …]`** — append this marker inline to any requirement you are genuinely unsure about (an ambiguous name, an inferred behavior you could not confirm). Use it sparingly — it flags the low-confidence items for a human to resolve.
 5. **`## Uncovered`** — a section listing every file you could **not** read (unreadable or over budget), one per line, so the draft's coverage is honest. If you read everything, write `_None — every file in the area was read._`
 

@@ -18,6 +18,13 @@ async function main(): Promise<void> {
     { suite: "dormant", target: path.join(fixtures, "plain-project") },
     { suite: "multiroot", target: path.join(fixtures, "atlas.code-workspace") },
     { suite: "malformed", target: path.join(fixtures, "malformed-speckit") },
+    { suite: "graph", target: path.join(fixtures, "graph", "cross-links") },
+    { suite: "render", target: path.join(fixtures, "graph", "render-demo") },
+    {
+      suite: "render-multiroot",
+      target: path.join(fixtures, "graph", "two-projects", "atlas.code-workspace"),
+    },
+    { suite: "layout", target: path.join(fixtures, "graph", "render-demo") },
   ];
 
   for (const scenario of scenarios) {

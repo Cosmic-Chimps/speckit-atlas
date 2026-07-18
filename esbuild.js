@@ -15,6 +15,13 @@ const shared = {
   logLevel: "info",
 };
 
+// Webview bundles (browser/IIFE). Each is self-contained and loaded via a nonce'd
+// <script> in a strict-CSP webview. Cytoscape is bundled into map.js (no CDN).
+const WEBVIEW_ENTRIES = [
+  { in: "src/webview/map/main.ts", out: "media/map.js" },
+  { in: "src/webview/controls/main.ts", out: "media/controls.js" },
+];
+
 async function main() {
   const extension = await esbuild.context({
     ...shared,
@@ -27,21 +34,48 @@ async function main() {
     external: ["vscode"],
   });
 
-  const webview = await esbuild.context({
+  // Headless siblings (feature 004): CLI + MCP server. Node/CJS, no vscode. The MCP SDK is
+  // bundled in. Shipped via npm `bin`, excluded from the .vsix.
+  const cli = await esbuild.context({
     ...shared,
-    entryPoints: ["src/webview/main.ts"],
-    format: "iife",
-    platform: "browser",
-    target: "es2020",
-    outfile: "media/webview.js",
+    entryPoints: ["src/cli/main.ts"],
+    format: "cjs",
+    platform: "node",
+    target: "node18",
+    outfile: "dist/cli.js",
+    banner: { js: "#!/usr/bin/env node" },
   });
 
+  const mcp = await esbuild.context({
+    ...shared,
+    entryPoints: ["src/mcp/main.ts"],
+    format: "cjs",
+    platform: "node",
+    target: "node18",
+    outfile: "dist/mcp.js",
+    banner: { js: "#!/usr/bin/env node" },
+  });
+
+  const webviews = await Promise.all(
+    WEBVIEW_ENTRIES.map((e) =>
+      esbuild.context({
+        ...shared,
+        entryPoints: [e.in],
+        format: "iife",
+        platform: "browser",
+        target: "es2020",
+        outfile: e.out,
+      }),
+    ),
+  );
+
+  const contexts = [extension, cli, mcp, ...webviews];
   if (watch) {
-    await Promise.all([extension.watch(), webview.watch()]);
+    await Promise.all(contexts.map((c) => c.watch()));
     console.log("[esbuild] watching…");
   } else {
-    await Promise.all([extension.rebuild(), webview.rebuild()]);
-    await Promise.all([extension.dispose(), webview.dispose()]);
+    await Promise.all(contexts.map((c) => c.rebuild()));
+    await Promise.all(contexts.map((c) => c.dispose()));
   }
 }
 

@@ -10,6 +10,19 @@ export type {
   DetectionResult,
   MapViewState,
   MapViewModel,
+  // Graph model (feature 002)
+  ArtifactPresence,
+  FeatureInput,
+  ProjectSnapshot,
+  ReferenceKind,
+  Reference,
+  FeatureFacts,
+  SpecNode,
+  EdgeTier,
+  RelationEdge,
+  ProjectGraph,
+  WorkspaceGraph,
+  GraphOptions,
 } from "./model/types.js";
 
 export {
@@ -19,3 +32,31 @@ export {
   SIGNAL_SPECS_SPEC,
 } from "./detection/detect.js";
 export { buildMapViewModel } from "./model/viewModel.js";
+export {
+  parseFeature,
+  buildProjectGraph,
+  buildWorkspaceGraph,
+  DEFAULT_GRAPH_OPTIONS,
+} from "./graph/index.js";
+
+// Query layer (feature 004)
+export type {
+  QueryKind,
+  QueryScope,
+  SpecRelationships,
+  StatusRow,
+  StatusSummary,
+  Orphans,
+  CheckResult,
+  QueryResult,
+} from "./query/index.js";
+export {
+  getGraph,
+  specRelationships,
+  statusSummary,
+  orphans,
+  runCheck,
+  KNOWN_CHECK_RULES,
+  toEnvelope,
+  formatText,
+} from "./query/index.js";

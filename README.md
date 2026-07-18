@@ -8,10 +8,41 @@ repositories and renders the relationships between specs — dependencies,
 cross-references, and shared data-model entities — alongside implementation status.
 It is a companion to, not a replacement for, `speckit-companion`.
 
-This repository currently contains the **extension scaffold** (feature
-`001-extension-scaffold`): an installable skeleton that activates lazily in a Spec Kit
-workspace and shows a placeholder Map view. Specification parsing and graph rendering
-land in later features.
+This repository currently contains:
+
+- **`001-extension-scaffold`** — an installable skeleton that activates lazily in a
+  Spec Kit workspace and shows a placeholder Map view.
+- **`002-spec-graph-model`** — the pure headless model that turns a project into a
+  spec-relationship graph (nodes per feature + inferred, tiered, toggleable edges),
+  populating `MapViewModel.graph`.
+- **`003-graph-rendering`** — renders that model: a center **map** panel
+  (Cytoscape.js, force-directed) plus a **controls** sidebar (legend, heuristic toggles,
+  tier/status filters, search, project selector). Open a node's spec read-only; the map
+  updates live and incrementally as specs change.
+- **`004-agent-query-surface`** — a headless **CLI** (`speckit-atlas`) and local **MCP
+  server** (`speckit-atlas-mcp`) over the same core, so agents and CI can query the graph
+  (relationships, status, orphans, a `no-orphans` check) without the editor. Versioned
+  JSON output, read-only, offline. Ships via npm; excluded from the `.vsix`.
+- **`006-persist-map-layout`** — the map **remembers its arrangement**. Node positions and
+  the viewport are saved as you drag or as the layout settles, and restored when you close
+  and reopen the Map tab (and across editor restarts). New specs slot in without scrambling
+  what's placed; a **Reset layout** control re-runs the automatic layout. Saved in the
+  editor's `workspaceState` — no workspace files written, offline, telemetry-free.
+
+### Headless usage (feature 004)
+
+```bash
+speckit-atlas graph --root .                 # JSON envelope of the graph
+speckit-atlas spec 001-foo --root .          # a spec's relationships
+speckit-atlas status --root . --format text  # human-readable summary
+speckit-atlas check --rule no-orphans        # exit 1 if any spec is orphaned (CI gate)
+```
+
+MCP client config (e.g. Claude Code / Desktop):
+
+```jsonc
+{ "speckit-atlas": { "command": "npx", "args": ["speckit-atlas-mcp", "--root", "."] } }
+```
 
 ## Principles (see `.specify/memory/constitution.md`)
 

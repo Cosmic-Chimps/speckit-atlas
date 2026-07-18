@@ -1,8 +1,9 @@
 node_modules/
 dist/
 out/
-media/webview.js
-media/webview.js.map
+# generated webview bundles (source is src/webview/**)
+media/*.js
+media/*.js.map
 *.vsix
 *.log
 .DS_Store

@@ -1,0 +1,67 @@
+/* Map panel — theme-aware via VS Code CSS variables. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  overflow: hidden;
+}
+
+#cy {
+  position: absolute;
+  inset: 0;
+}
+
+#empty {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  color: var(--vscode-descriptionForeground);
+}
+
+body.is-empty #cy {
+  display: none;
+}
+body.is-empty #empty {
+  display: flex;
+}
+
+#detail {
+  position: absolute;
+  right: 0;
+  top: 0;
+  max-width: 320px;
+  padding: 0.75rem 1rem;
+  background: var(--vscode-editorWidget-background);
+  border-left: 1px solid var(--vscode-editorWidget-border, transparent);
+  font-size: 0.9em;
+  display: none;
+}
+body.has-selection #detail {
+  display: block;
+}
+
+#detail h2 {
+  font-size: 1em;
+  margin: 0 0 0.35rem;
+}
+#detail .warn {
+  color: var(--vscode-editorWarning-foreground, #b89500);
+}
+#detail button {
+  margin-top: 0.5rem;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  border: none;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  border-radius: 2px;
+}

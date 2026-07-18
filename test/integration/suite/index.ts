@@ -18,6 +18,21 @@ export async function run(): Promise<void> {
     case "malformed":
       await (await import("../malformed.test.js")).run();
       break;
+    case "graph":
+      await (await import("../graph.test.js")).run();
+      break;
+    case "render":
+      await (await import("../render.test.js")).run();
+      break;
+    case "render-multiroot":
+      await (await import("../render-multiroot.test.js")).run();
+      break;
+    case "layout":
+      // feature 006 — layout persistence (restore, drag, evolve) share one fixture.
+      await (await import("../layout-restore.test.js")).run();
+      await (await import("../layout-drag.test.js")).run();
+      await (await import("../layout-evolve.test.js")).run();
+      break;
     default:
       throw new Error(`Unknown ATLAS_SUITE: ${suite}`);
   }

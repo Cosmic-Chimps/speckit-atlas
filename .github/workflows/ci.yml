@@ -20,6 +20,8 @@ jobs:
       - run: npm run lint
       - run: npm run format
       - run: npm run test:core
+      - run: npm run test:contracts
+      - run: npm run check:size
 
   integration:
     name: Editor integration (${{ matrix.vscode }})

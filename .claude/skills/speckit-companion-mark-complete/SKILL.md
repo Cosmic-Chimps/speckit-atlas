@@ -1,7 +1,7 @@
 ---
 name: speckit-companion-mark-complete
-description: 'Mark the active spec completed — the Companion workflow''s terminal
-  step (writes status: completed)'
+description: "Mark the active spec completed — the Companion workflow's terminal
+  step (writes status: completed)"
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: github-spec-kit
@@ -61,6 +61,7 @@ host command.
 ## Graceful Degradation
 
 Best-effort and idempotent:
+
 - If `python3` is missing, skip with the warning above (never fail the host command).
 - A spec already at `completed` or `archived` is left untouched — the script reports it and exits 0.
 

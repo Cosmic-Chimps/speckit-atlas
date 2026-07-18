@@ -1,0 +1,116 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import type {
+  CheckResult,
+  Orphans,
+  ProjectGraph,
+  QueryResult,
+  SpecRelationships,
+  StatusSummary,
+  WorkspaceGraph,
+} from "../../src/core/index.js";
+
+// out/test/cli → repo root is three levels up.
+const repo = path.resolve(__dirname, "../../..");
+const CLI = path.join(repo, "dist", "cli.js");
+const demo = path.join(repo, "fixtures", "graph", "render-demo");
+const malformed = path.join(repo, "fixtures", "graph", "malformed");
+const twoProjects = path.join(repo, "fixtures", "graph", "two-projects");
+
+interface RunOut {
+  status: number;
+  stdout: string;
+}
+function run(args: string[]): RunOut {
+  try {
+    const stdout = execFileSync("node", [CLI, ...args], { encoding: "utf8" });
+    return { status: 0, stdout };
+  } catch (err) {
+    const e = err as { status?: number; stdout?: string };
+    return { status: e.status ?? 1, stdout: e.stdout ?? "" };
+  }
+}
+function json(args: string[]): { status: number; env: QueryResult } {
+  const out = run(args);
+  return { status: out.status, env: JSON.parse(out.stdout) as QueryResult };
+}
+
+test("CLI-1: graph → versioned envelope with the model's nodes/edges", () => {
+  const { env } = json(["graph", "--root", demo]);
+  assert.equal(env.schemaVersion, 1);
+  assert.equal(env.kind, "graph");
+  const wg = env.data as WorkspaceGraph;
+  assert.equal(wg.projects[0].nodes.length, 3);
+  assert.equal(wg.projects[0].edges.length, 2);
+});
+
+test("CLI-2: spec → relationships; unknown id found:false, exit 0", () => {
+  const rel = json(["spec", "001-alpha", "--root", demo]).env.data as SpecRelationships;
+  assert.equal(rel.found, true);
+  assert.equal(rel.dependsOn.length, 2);
+  const miss = json(["spec", "999-nope", "--root", demo]);
+  assert.equal(miss.status, 0);
+  assert.equal((miss.env.data as SpecRelationships).found, false);
+});
+
+test("CLI-3: status + orphans envelopes", () => {
+  const s = json(["status", "--root", demo]).env.data as StatusSummary;
+  assert.equal(s.aggregate.specs, 3);
+  const o = json(["orphans", "--root", demo]).env.data as Orphans;
+  assert.deepEqual(o.orphans, []); // render-demo is fully connected
+});
+
+test("CLI-4: check exits 1 on orphans, 0 on a clean repo", () => {
+  const bad = run(["check", "--rule", "no-orphans", "--root", malformed]);
+  assert.equal(bad.status, 1);
+  assert.ok((JSON.parse(bad.stdout).data as CheckResult).violations.length >= 1);
+  const good = run(["check", "--rule", "no-orphans", "--root", demo]);
+  assert.equal(good.status, 0);
+});
+
+test("CLI-5: --format text renders human output", () => {
+  const out = run(["graph", "--root", demo, "--format", "text"]);
+  assert.match(out.stdout, /# .*3 specs/);
+});
+
+test("CLI-6: deterministic — same command twice is byte-identical", () => {
+  const a = run(["graph", "--root", demo]).stdout;
+  const b = run(["graph", "--root", demo]).stdout;
+  assert.equal(a, b);
+});
+
+test("CLI-7: no workspace writes during a query", () => {
+  const before = snapshot(demo);
+  run(["graph", "--root", demo]);
+  run(["status", "--root", demo]);
+  assert.deepEqual(snapshot(demo), before);
+});
+
+test("CLI-8: --project scopes to one project (multi-root), no cross edges", () => {
+  const all = json(["graph", "--root", twoProjects]).env.data as WorkspaceGraph;
+  assert.equal(all.projects.length, 2);
+  const pid = all.projects[0].projectId;
+  const one = json(["graph", "--root", twoProjects, "--project", pid]).env.data as ProjectGraph;
+  assert.equal(one.projectId, pid); // a single ProjectGraph
+  assert.equal(one.nodes.length, 1);
+});
+
+function snapshot(root: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  const walk = (dir: string, prefix: string): void => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const rel = prefix ? `${prefix}/${e.name}` : e.name;
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        walk(p, rel);
+      } else {
+        out[rel] = fs.statSync(p).size;
+      }
+    }
+  };
+  walk(root, "");
+  return out;
+}
