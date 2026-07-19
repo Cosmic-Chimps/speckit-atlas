@@ -67,7 +67,10 @@ test("CLI-9 / feature 009: timestamp-numbered specs are discovered and connected
     "node ids are the timestamp folder names",
   );
   // A definitive link + a strong slug-mention edge form despite the non-NNN scheme.
-  assert.ok(proj.edges.some((e) => e.tier === "definitive"), "link edge across timestamp folders");
+  assert.ok(
+    proj.edges.some((e) => e.tier === "definitive"),
+    "link edge across timestamp folders",
+  );
   assert.ok(
     proj.edges.some((e) => e.heuristic === "slug-mention"),
     "slug-mention edge across timestamp folders",

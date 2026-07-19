@@ -27,6 +27,12 @@ test("classifySeed: no current nodes → none", () => {
 });
 
 test("centroidFor: averages neighbour positions; null when empty", () => {
-  assert.deepEqual(centroidFor([{ x: 0, y: 0 }, { x: 4, y: 2 }]), { x: 2, y: 1 });
+  assert.deepEqual(
+    centroidFor([
+      { x: 0, y: 0 },
+      { x: 4, y: 2 },
+    ]),
+    { x: 2, y: 1 },
+  );
   assert.equal(centroidFor([]), null);
 });

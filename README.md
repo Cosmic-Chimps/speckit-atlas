@@ -34,7 +34,7 @@ This repository currently contains:
   tools with no `npm install` and no config. Read-only, offline, telemetry-free; requires
   VS Code ≥ 1.101. Users on older editors, CI, and terminals keep the npm CLI/MCP.
 - **`008-mcp-client-setup`** — **connect any other agent in seconds**. The command
-  *SpecKit Atlas: Set up MCP for your agent* generates a paste-ready registration for
+  _SpecKit Atlas: Set up MCP for your agent_ generates a paste-ready registration for
   clients that don't read VS Code's registry (Claude Code, Cursor, Claude Desktop, or a
   generic stdio form), scoped to your workspace, and copies it. The extension writes
   nothing — you apply the config. Read-only, offline.

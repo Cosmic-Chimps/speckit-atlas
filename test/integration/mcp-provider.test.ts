@@ -44,7 +44,10 @@ export async function run(): Promise<void> {
 
     for (const d of defs) {
       // C-3: the advertised binary is the bundled server and it exists in the install layout.
-      assert.ok(d.args[0].endsWith(path.join("dist", "mcp.js")), `args[0] is dist/mcp.js: ${d.args[0]}`);
+      assert.ok(
+        d.args[0].endsWith(path.join("dist", "mcp.js")),
+        `args[0] is dist/mcp.js: ${d.args[0]}`,
+      );
       assert.ok(fs.existsSync(d.args[0]), `bundled server present at ${d.args[0]}`);
       // C-2: scoped to a real workspace folder via --root.
       assert.equal(d.args[1], "--root");

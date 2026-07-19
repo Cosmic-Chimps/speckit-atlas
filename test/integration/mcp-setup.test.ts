@@ -42,7 +42,11 @@ export async function run(): Promise<void> {
       assert.ok(doc.length > 0, `${client} produced a registration`);
     }
     const after = await vscode.workspace.findFiles("**/.mcp.json", "**/node_modules/**", 5);
-    assert.equal(after.length, before.length, "generating a registration wrote no .mcp.json (read-only)");
+    assert.equal(
+      after.length,
+      before.length,
+      "generating a registration wrote no .mcp.json (read-only)",
+    );
   });
 
   await runAll("mcp-setup");

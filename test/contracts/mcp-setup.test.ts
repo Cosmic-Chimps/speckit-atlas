@@ -21,7 +21,12 @@ const NPM = npmLaunchSpec(ROOT);
 
 // ── US1: Claude Code shell form + quoting ────────────────────────────────────
 test("MS-1: claude-code → a `claude mcp add … -- <cmd> <args>` command (C-1/C-6/C-7)", () => {
-  const s = formatRegistration({ client: "claude-code", launch: BUNDLED, projectRoot: ROOT, serverName: DEFAULT_SERVER_NAME });
+  const s = formatRegistration({
+    client: "claude-code",
+    launch: BUNDLED,
+    projectRoot: ROOT,
+    serverName: DEFAULT_SERVER_NAME,
+  });
   assert.match(s, /^claude mcp add speckit-atlas /);
   assert.ok(s.includes("--env ELECTRON_RUN_AS_NODE=1"), "bundled env passed as --env");
   assert.ok(s.includes(" -- "), "separator before the command");
@@ -34,15 +39,27 @@ test("MS-2: shellQuote runs verbatim for spaces and embedded quotes (C-5)", () =
   assert.equal(shellQuote("/with space/x"), "'/with space/x'");
   assert.equal(shellQuote("a'b"), "'a'\\''b'");
   // A root with a space stays quoted as a single token in the command:
-  const s = formatRegistration({ client: "claude-code", launch: bundledLaunchSpec(EXT, NODE, "/w s/root"), projectRoot: "/w s/root", serverName: "x" });
+  const s = formatRegistration({
+    client: "claude-code",
+    launch: bundledLaunchSpec(EXT, NODE, "/w s/root"),
+    projectRoot: "/w s/root",
+    serverName: "x",
+  });
   assert.ok(s.includes("'/w s/root'"), "space-containing root is quoted");
 });
 
 // ── US2: JSON forms for Cursor / Claude Desktop / generic ────────────────────
 test("MS-3: cursor & claude-desktop → valid mcpServers JSON (C-2/C-3)", () => {
   for (const client of ["cursor", "claude-desktop"] as const) {
-    const s = formatRegistration({ client, launch: BUNDLED, projectRoot: ROOT, serverName: "speckit-atlas" });
-    const parsed = JSON.parse(s) as { mcpServers: Record<string, { command: string; args: string[]; env?: Record<string, string> }> };
+    const s = formatRegistration({
+      client,
+      launch: BUNDLED,
+      projectRoot: ROOT,
+      serverName: "speckit-atlas",
+    });
+    const parsed = JSON.parse(s) as {
+      mcpServers: Record<string, { command: string; args: string[]; env?: Record<string, string> }>;
+    };
     const server = parsed.mcpServers["speckit-atlas"];
     assert.equal(server.command, NODE);
     assert.ok(server.args.includes("--root") && server.args.includes(ROOT));
@@ -51,7 +68,12 @@ test("MS-3: cursor & claude-desktop → valid mcpServers JSON (C-2/C-3)", () => 
 });
 
 test("MS-4: generic includes stdio command+args (C-4); unknown id → generic", () => {
-  const s = formatRegistration({ client: "generic", launch: BUNDLED, projectRoot: ROOT, serverName: "speckit-atlas" });
+  const s = formatRegistration({
+    client: "generic",
+    launch: BUNDLED,
+    projectRoot: ROOT,
+    serverName: "speckit-atlas",
+  });
   assert.ok(s.includes(`command: ${NODE}`));
   assert.ok(s.includes("--root"));
   // clientTarget falls back to the generic catalog entry for an unknown id:
@@ -69,7 +91,13 @@ test("MS-5: bundledLaunchSpec vs npmLaunchSpec (C-7)", () => {
 });
 
 test("MS-6: composeSetupDocument surfaces BOTH the bundled and npm forms (FR-003)", () => {
-  const input: SetupInput = { client: "claude-code", serverName: "speckit-atlas", projectRoot: ROOT, extensionPath: EXT, nodePath: NODE };
+  const input: SetupInput = {
+    client: "claude-code",
+    serverName: "speckit-atlas",
+    projectRoot: ROOT,
+    extensionPath: EXT,
+    nodePath: NODE,
+  };
   const doc = composeSetupDocument(input);
   assert.ok(doc.includes(path.join(EXT, "dist", "mcp.js")), "bundled form present");
   assert.ok(doc.includes("speckit-atlas-mcp"), "npm alternative present");

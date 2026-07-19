@@ -45,7 +45,10 @@ export async function run(): Promise<void> {
     a.simulatePersistLayout({
       type: "persistLayout",
       projectId: "__all__",
-      positions: { ...Object.fromEntries(ids.map((id) => [id, { x: 1, y: 1 }])), "999-ghost": { x: 9, y: 9 } },
+      positions: {
+        ...Object.fromEntries(ids.map((id) => [id, { x: 1, y: 1 }])),
+        "999-ghost": { x: 9, y: 9 },
+      },
       viewport: { pan: { x: 0, y: 0 }, zoom: 1 },
     });
     const saved = a.getSavedLayout().projects["__all__"];

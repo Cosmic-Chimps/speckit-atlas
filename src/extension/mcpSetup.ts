@@ -99,7 +99,16 @@ function mcpServersJson(serverName: string, launch: ServerLaunchSpec): string {
 
 function claudeAddCommand(serverName: string, launch: ServerLaunchSpec): string {
   const envFlags = Object.entries(launch.env).flatMap(([k, v]) => ["--env", `${k}=${v}`]);
-  const parts = ["claude", "mcp", "add", serverName, ...envFlags, "--", launch.command, ...launch.args];
+  const parts = [
+    "claude",
+    "mcp",
+    "add",
+    serverName,
+    ...envFlags,
+    "--",
+    launch.command,
+    ...launch.args,
+  ];
   return parts.map(shellQuote).join(" ");
 }
 

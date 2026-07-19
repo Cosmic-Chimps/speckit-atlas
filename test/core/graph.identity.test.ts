@@ -5,7 +5,12 @@ import { buildProjectGraph, parseFeature, type FeatureInput } from "../../src/co
 // Mirrors the real number derivation (projectScan/nodeScan `^(\d{3})-`): a numeric `number`
 // only for sequential folders, null for timestamp/unnumbered. Identity is always the folder id.
 function feat(id: string, spec: string): FeatureInput {
-  return { id, number: id.match(/^(\d{3})-/)?.[1] ?? null, artifacts: ["spec"], files: { "spec.md": spec } };
+  return {
+    id,
+    number: id.match(/^(\d{3})-/)?.[1] ?? null,
+    artifacts: ["spec"],
+    files: { "spec.md": spec },
+  };
 }
 function graphOf(features: FeatureInput[], options = {}) {
   return buildProjectGraph("p", "P", features.map(parseFeature), options);
@@ -43,14 +48,21 @@ test("ID-2 / SC-002: mixed schemes connect; unnumbered folders participate", () 
     feat(z, `# Z\nextends ](../${x}/spec.md).`),
   ]);
   assert.equal(edge(g, x, y)?.tier, "definitive", "sequential → timestamp link");
-  assert.equal(edge(g, y, x)?.heuristic, "slug-mention", "timestamp → sequential by name (cross-scheme)");
+  assert.equal(
+    edge(g, y, x)?.heuristic,
+    "slug-mention",
+    "timestamp → sequential by name (cross-scheme)",
+  );
   assert.ok(edge(g, x, z), "unnumbered folder is a valid mention target");
   assert.equal(edge(g, z, x)?.tier, "definitive", "unnumbered folder is a valid link source");
 });
 
 // ── US3: no regression + precision ───────────────────────────────────────────
 test("ID-3 / SC-003: sequential slug-mention behavior unchanged (count-weighted)", () => {
-  const g = graphOf([feat("001-a", "# A\nRelates to 002-b, 002-b and 002-b."), feat("002-b", "# B")]);
+  const g = graphOf([
+    feat("001-a", "# A\nRelates to 002-b, 002-b and 002-b."),
+    feat("002-b", "# B"),
+  ]);
   const e = edge(g, "001-a", "002-b");
   assert.ok(e);
   assert.equal(e.heuristic, "slug-mention");
@@ -65,7 +77,10 @@ test("ID-4 / SC-004: only real siblings match; whole-word (no substring)", () =>
     feat("auth", "# Auth"),
   ]);
   assert.ok(edge(g, "001-a", "002-b"), "real sibling 002-b matched");
-  assert.ok(!g.edges.some((e) => e.target === "999-ghost"), "a non-sibling token never forms an edge");
+  assert.ok(
+    !g.edges.some((e) => e.target === "999-ghost"),
+    "a non-sibling token never forms an edge",
+  );
   const a = edge(g, "001-a", "auth");
   assert.ok(a, "common-word sibling matched as a whole word");
   assert.equal(a.weight, 1, "'auth' is NOT counted inside 'author' (whole-word only)");
