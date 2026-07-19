@@ -5,7 +5,7 @@ export { buildWorkspaceGraph } from "./buildWorkspaceGraph.js";
 export { DEFAULT_GRAPH_OPTIONS, resolveOptions } from "./options.js";
 export {
   extractLinks,
-  extractSlugMentions,
+  matchSiblingMentions,
   extractBareNumbers,
   extractEntities,
   extractCodeReferences,

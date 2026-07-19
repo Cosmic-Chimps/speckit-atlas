@@ -38,6 +38,12 @@ This repository currently contains:
   clients that don't read VS Code's registry (Claude Code, Cursor, Claude Desktop, or a
   generic stdio form), scoped to your workspace, and copies it. The extension writes
   nothing — you apply the config. Read-only, offline.
+- **`009-folder-name-identity`** — **relationships work with any numbering scheme**.
+  Identity is the feature **folder name**, and references resolve against the real set of
+  sibling folders, so link/mention edges form for sequential (`003-…`), timestamp
+  (`20260719-143022-…`), unnumbered, and preset repos alike. Sequential repos are unchanged.
+  Safe to switch `.specify/init-options.json` to `"timestamp"` to avoid concurrent
+  feature-number collisions in a team.
 
 ### Headless usage (feature 004)
 

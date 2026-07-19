@@ -100,3 +100,15 @@ media/  test/  fixtures/
   default; npm `speckit-atlas-mcp` offered as alt). New pure `extension/mcpSetup.ts`
   (`formatRegistration` + `CLIENTS`); no core/server changes; no new dep, no engine bump.
   See `specs/008-mcp-client-setup/`.
+- `009-folder-name-identity` — **active (planned)**: relationship identity = the **folder
+  name**, so link/slug edges form under any numbering scheme (sequential, **timestamp**,
+  unnumbered, preset) — fixes the graph collapsing when a team switches off `NNN-` to avoid
+  concurrent-number collisions. Revises 002's pure core: `buildProjectGraph` already resolves
+  against the real sibling `idSet`; the gap is extraction. Broaden `extractLinks` to
+  per-path-segment candidates; replace the `NNN-slug` regex with a sibling-aware
+  `matchSiblingMentions(text, siblingIds, self)` (whole-word, count-weighted — resolved
+  FR-004) run in `buildProjectGraph` via a longest-first alternation scan; carry transient
+  `FeatureFacts.mentionText`. `number`/bare-number stay 3-digit (FR-005/6) → `projectScan`/
+  `nodeScan` unchanged. Byte-identical on sequential repos (SC-003). Fixture-driven
+  (timestamp/mixed/unnumbered + sequential regression); no shell/renderer/query/CLI/MCP
+  change. See `specs/009-folder-name-identity/`.

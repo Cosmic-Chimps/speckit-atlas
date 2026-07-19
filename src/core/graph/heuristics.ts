@@ -8,16 +8,20 @@ import type { Reference } from "../model/types.js";
  * Heuristic contract: see specs/002-spec-graph-model/contracts/heuristics.md.
  */
 
-const SLUG = "[0-9]{3}-[a-z0-9-]+";
-
-/** `link` (definitive): relative link into another feature folder `.../NNN-slug/...`. */
-const LINK_RE = new RegExp(`\\]\\((?:\\.\\.?/)+(${SLUG})/`, "g");
-
-/** `slug` (strong): any full feature-slug token appearing in the text. */
-const SLUG_TOKEN_RE = new RegExp(`(?<![\\w-])(${SLUG})(?![\\w-])`, "g");
+/**
+ * `link` (definitive): a relative markdown link `](./…)` / `](../…)`. Feature 009 captures
+ * the whole relative path so buildProjectGraph can resolve ANY path segment against the real
+ * sibling set — folder names of any numbering scheme (NNN-slug, timestamp, unnumbered).
+ */
+const REL_LINK_RE = /\]\((\.{1,2}\/[^)\s]*)\)/g;
 
 /** `number` (risky): a bare 3-digit token (resolved to a feature number later). */
 const NUMBER_RE = /(?<![\w:.\-/])([0-9]{3})(?![\w-])/g;
+
+/** Escape a folder name for safe inclusion in a RegExp alternation. */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 /** `code`: relative link to a source file. */
 const CODE_LINK_RE = /\]\((?:\.\.\/)+([^)]+\.(?:ts|tsx|cs|py|go|js|jsx))\)/g;
@@ -30,34 +34,55 @@ function snippet(line: string): string {
   return line.trim().slice(0, 100);
 }
 
-/** Extract definitive link references (target = the slug in the path). */
+/**
+ * Extract definitive link references. Feature 009: emit a candidate for **each path segment**
+ * of every relative link, so any segment that names a real sibling folder resolves later —
+ * regardless of numbering scheme or nesting depth. Non-feature segments (`specs`, `src`, a
+ * file name) simply don't resolve. Total; never throws.
+ */
 export function extractLinks(text: string): Reference[] {
   const out = new Map<string, Reference>();
-  for (const m of text.matchAll(LINK_RE)) {
-    const target = m[1];
-    const prev = out.get(target);
-    out.set(target, {
-      kind: "link",
-      targetHint: target,
-      evidence: prev?.evidence ?? m[0],
-      count: (prev?.count ?? 0) + 1,
-    });
+  for (const m of text.matchAll(REL_LINK_RE)) {
+    const evidence = m[0];
+    for (const seg of m[1].split("/")) {
+      if (!seg || seg === "." || seg === "..") {
+        continue;
+      }
+      const prev = out.get(seg);
+      out.set(seg, {
+        kind: "link",
+        targetHint: seg,
+        evidence: prev?.evidence ?? evidence,
+        count: (prev?.count ?? 0) + 1,
+      });
+    }
   }
   return [...out.values()];
 }
 
-/** Extract slug-mention candidates, counted. (buildProjectGraph filters to real siblings.) */
-export function extractSlugMentions(text: string): Reference[] {
-  const counts = new Map<string, number>();
-  for (const m of text.matchAll(SLUG_TOKEN_RE)) {
-    counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+/**
+ * Feature 009: sibling-aware slug-mention matching. Counts **whole-word** occurrences of each
+ * real sibling folder name in `text` — for any numbering scheme — excluding `selfId`. Uses a
+ * single longest-first alternation scan (so `fleet-safety` never matches inside
+ * `fleet-safety-audit`, and nested names resolve to the most specific). Total; never throws.
+ */
+export function matchSiblingMentions(
+  text: string,
+  siblingIds: Iterable<string>,
+  selfId: string,
+): { id: string; count: number }[] {
+  const ids = [...new Set(siblingIds)].filter((id) => id && id !== selfId);
+  if (ids.length === 0 || !text) {
+    return [];
   }
-  return [...counts.entries()].map(([slug, count]) => ({
-    kind: "slug" as const,
-    targetHint: slug,
-    evidence: slug,
-    count,
-  }));
+  ids.sort((a, b) => b.length - a.length); // longest-first: most specific wins
+  const alternation = ids.map(escapeRegExp).join("|");
+  const re = new RegExp(`(?<![A-Za-z0-9-])(?:${alternation})(?![A-Za-z0-9-])`, "g");
+  const counts = new Map<string, number>();
+  for (const m of text.matchAll(re)) {
+    counts.set(m[0], (counts.get(m[0]) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([id, count]) => ({ id, count }));
 }
 
 /** Extract bare 3-digit number candidates, excluding task ids (`T012`) and line refs. */

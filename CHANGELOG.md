@@ -8,6 +8,16 @@ All notable changes to this extension are documented here. The format follows
 
 ### Changed
 
+- **Relationships are now folder-name-based** (`009-folder-name-identity`): link and
+  slug-mention edges resolve against the actual set of sibling feature folders, so they form
+  under **any** numbering scheme — sequential (`003-…`), **timestamp**
+  (`20260719-143022-…`), or unnumbered / preset. Previously the graph collapsed (losing the
+  definitive-link and strong-mention tiers) when a repo used anything but a 3-digit prefix,
+  which made switching `.specify/init-options.json` to `"timestamp"` (to avoid concurrent
+  feature-number collisions) safe only for the node list, not the edges. Sequential repos
+  produce identical graphs to before. Bare-number (risky) stays scoped to numbered features.
+  Pure-core change; rendering, query, and CLI/MCP consume it unchanged.
+
 - **Minimum VS Code raised to `1.101`** (`007-mcp-provider-contribution`): required for the
   MCP server-definition provider API below. Users on older editors keep full functionality
   via the standalone npm CLI/MCP (`speckit-atlas` / `speckit-atlas-mcp`).

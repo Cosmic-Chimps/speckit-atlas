@@ -10,7 +10,6 @@ import {
   extractCodeReferences,
   extractEntities,
   extractLinks,
-  extractSlugMentions,
 } from "./heuristics.js";
 
 /**
@@ -35,20 +34,24 @@ export function parseFeature(input: FeatureInput): FeatureFacts {
   let status: string | null = null;
   let taskCompletion: { done: number; total: number } | null = null;
   let references: Reference[] = [];
+  // Feature 009: the scannable text buildProjectGraph uses for sibling-aware slug matching.
+  let mentionText = "";
 
   try {
     const spec = fileByName(files, "spec.md");
     const tasks = fileByName(files, "tasks.md");
     const dataModel = fileByName(files, "data-model.md");
     const allText = Object.values(files).join("\n");
+    mentionText = allText;
 
     title = extractTitle(spec) ?? id;
     status = extractStatus(spec);
     taskCompletion = extractTaskCompletion(tasks);
 
+    // Slug-mention edges are produced sibling-aware in buildProjectGraph (feature 009),
+    // not extracted here — so no numbering-scheme assumption leaks into extraction.
     references = [
       ...extractLinks(allText),
-      ...extractSlugMentions(allText),
       ...extractBareNumbers(allText),
       ...extractCodeReferences(allText),
       ...(dataModel ? extractEntities(dataModel) : []),
@@ -61,7 +64,17 @@ export function parseFeature(input: FeatureInput): FeatureFacts {
     });
   }
 
-  return { id, number, title, status, taskCompletion, completeness, references, warnings };
+  return {
+    id,
+    number,
+    title,
+    status,
+    taskCompletion,
+    completeness,
+    references,
+    warnings,
+    mentionText,
+  };
 }
 
 const ARTIFACT_KEYS: Record<keyof ArtifactPresence, string[]> = {

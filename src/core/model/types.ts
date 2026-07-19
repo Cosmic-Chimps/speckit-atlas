@@ -109,6 +109,12 @@ export interface FeatureFacts {
   readonly completeness: ArtifactPresence;
   readonly references: readonly Reference[];
   readonly warnings: readonly Warning[];
+  /**
+   * Feature 009: the feature's concatenated scannable text, used by buildProjectGraph for
+   * sibling-aware slug-mention matching (folder names of any numbering scheme). Transient —
+   * recomputed each build from the feature's files, never persisted.
+   */
+  readonly mentionText: string;
 }
 
 /** A node in the graph — one specification/feature. */

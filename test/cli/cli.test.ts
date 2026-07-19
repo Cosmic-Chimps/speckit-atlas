@@ -19,6 +19,7 @@ const CLI = path.join(repo, "dist", "cli.js");
 const demo = path.join(repo, "fixtures", "graph", "render-demo");
 const malformed = path.join(repo, "fixtures", "graph", "malformed");
 const twoProjects = path.join(repo, "fixtures", "graph", "two-projects");
+const timestamp = path.join(repo, "fixtures", "graph", "timestamp-numbering");
 
 interface RunOut {
   status: number;
@@ -54,6 +55,23 @@ test("CLI-2: spec → relationships; unknown id found:false, exit 0", () => {
   const miss = json(["spec", "999-nope", "--root", demo]);
   assert.equal(miss.status, 0);
   assert.equal((miss.env.data as SpecRelationships).found, false);
+});
+
+test("CLI-9 / feature 009: timestamp-numbered specs are discovered and connected (real scan path)", () => {
+  const wg = json(["graph", "--root", timestamp]).env.data as WorkspaceGraph;
+  const proj = wg.projects[0];
+  assert.equal(proj.nodes.length, 2, "both timestamp folders discovered as nodes");
+  // number is null for timestamp folders (nodeScan derives only NNN-); identity is the folder name.
+  assert.ok(
+    proj.nodes.every((n) => /^\d{8}-\d{6}-/.test(n.id)),
+    "node ids are the timestamp folder names",
+  );
+  // A definitive link + a strong slug-mention edge form despite the non-NNN scheme.
+  assert.ok(proj.edges.some((e) => e.tier === "definitive"), "link edge across timestamp folders");
+  assert.ok(
+    proj.edges.some((e) => e.heuristic === "slug-mention"),
+    "slug-mention edge across timestamp folders",
+  );
 });
 
 test("CLI-3: status + orphans envelopes", () => {
