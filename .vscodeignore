@@ -1,9 +1,8 @@
 # Keep the packaged .vsix minimal: ship only the bundle and runtime assets.
-# The headless CLI/MCP bins (feature 004) ship via npm, not the extension package.
+# The CLI bin (feature 004) ships via npm only. The MCP server (dist/mcp.js) IS bundled
+# (feature 007) so the extension can advertise it to VS Code's MCP registry.
 dist/cli.js
-dist/mcp.js
 dist/cli.js.map
-dist/mcp.js.map
 .vscode/**
 .github/**
 .claude/**

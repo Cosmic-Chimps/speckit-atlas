@@ -6,7 +6,31 @@ All notable changes to this extension are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Minimum VS Code raised to `1.101`** (`007-mcp-provider-contribution`): required for the
+  MCP server-definition provider API below. Users on older editors keep full functionality
+  via the standalone npm CLI/MCP (`speckit-atlas` / `speckit-atlas-mcp`).
+
 ### Added
+
+- MCP setup for any agent client (`008-mcp-client-setup`): a new command **"SpecKit Atlas:
+  Set up MCP for your agent"** generates a paste-ready MCP registration for the clients that
+  don't read VS Code's registry — **Claude Code** (`claude mcp add …`), **Cursor**
+  (`.cursor/mcp.json`), **Claude Desktop** (config JSON), and a generic stdio form. It scopes
+  the registration to the chosen workspace folder, targets the bundled server (with the npm
+  `speckit-atlas-mcp` form offered as an alternative), copies it to the clipboard, and opens
+  full instructions. Read-only — the extension **writes no files**; you apply the config.
+  Complements 007 (which covers VS Code's built-in agent automatically).
+
+- In-editor MCP auto-discovery (`007-mcp-provider-contribution`): installing the extension
+  now makes the query surface (feature 004) available to in-editor AI agents automatically —
+  no `npm install`, no manual MCP config. The extension advertises its bundled MCP server
+  (`dist/mcp.js`, now shipped in the `.vsix`) to VS Code's MCP registry via a server-
+  definition provider, one stdio server per workspace folder (scoped with `--root`, launched
+  via the editor's own Node). Read-only, offline (stdio), telemetry-free; tool parity with
+  the standalone `speckit-atlas-mcp` is structural (same server). The `speckit-atlas` CLI
+  remains npm-only (excluded from the `.vsix`).
 
 - Persistent map layout (`006-persist-map-layout`): the map now remembers where its nodes
   are. Positions and viewport (pan/zoom) are captured as you drag or as the automatic

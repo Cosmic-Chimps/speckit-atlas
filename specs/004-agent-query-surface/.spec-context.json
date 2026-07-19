@@ -3,7 +3,7 @@
   "specName": "Agent Query Surface",
   "branch": "main",
   "currentStep": "implement",
-  "status": "implemented",
+  "status": "completed",
   "history": [
     {
       "step": "specify",
@@ -272,7 +272,15 @@
       "kind": "complete",
       "by": "extension",
       "at": "2026-07-18T19:03:32.670Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-18T22:31:41.317Z"
     }
   ],
-  "currentTask": "T030"
+  "currentTask": "T030",
+  "telemetryInstanceId": "bb5743ee-0eca-4971-862c-158ea96a6ac6"
 }

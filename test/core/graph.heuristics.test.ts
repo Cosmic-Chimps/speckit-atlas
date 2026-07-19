@@ -33,17 +33,17 @@ test("G-7: shared code-pinned entity connects; a bare shared name does not", () 
   assert.ok(shared[0].evidence.some((ev) => ev.includes("Flight")));
 });
 
-test("G-8: bare feature numbers produce no edge by default, but do when enabled", () => {
+test("G-8: bare feature numbers produce a risky edge by default, gone when disabled", () => {
   const a = feat("001-a", { files: { "spec.md": "see 002 for the rationale" } });
   const b = feat("002-b");
-  const off = graphOf([a, b]);
-  assert.equal(off.edges.filter((e) => e.heuristic === "bare-number").length, 0);
-
-  const on = graphOf([a, b], { bareNumbers: true });
+  const on = graphOf([a, b]); // bareNumbers is on by default
   const e = on.edges.find((x) => x.heuristic === "bare-number");
-  assert.ok(e, "risky edge appears when opted in");
+  assert.ok(e, "risky edge present by default");
   assert.equal(e.tier, "risky");
   assert.equal(e.target, "002-b");
+
+  const off = graphOf([a, b], { bareNumbers: false });
+  assert.equal(off.edges.filter((x) => x.heuristic === "bare-number").length, 0);
 });
 
 test("G-9: toggling one heuristic off removes exactly its edges (disjoint pairs)", () => {

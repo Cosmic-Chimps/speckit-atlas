@@ -38,8 +38,8 @@ test("HLP-4: defaultOn matches DEFAULT_GRAPH_OPTIONS (FR-008 consistency)", () =
   assert.equal(on("link"), DEFAULT_GRAPH_OPTIONS.links); // true (locked)
   assert.equal(on("slug"), DEFAULT_GRAPH_OPTIONS.slugMentions);
   assert.equal(on("shared-entity"), DEFAULT_GRAPH_OPTIONS.sharedEntities);
-  assert.equal(on("bare-number"), DEFAULT_GRAPH_OPTIONS.bareNumbers); // false
-  assert.equal(on("spec-code"), DEFAULT_GRAPH_OPTIONS.specToCode); // false
+  assert.equal(on("bare-number"), DEFAULT_GRAPH_OPTIONS.bareNumbers); // true
+  assert.equal(on("spec-code"), DEFAULT_GRAPH_OPTIONS.specToCode); // true
 });
 
 test("HLP-5: ENCODING_NOTES cover node and edge encodings", () => {

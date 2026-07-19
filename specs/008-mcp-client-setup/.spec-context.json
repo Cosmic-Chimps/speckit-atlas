@@ -1,30 +1,30 @@
 {
   "workflow": "speckit",
-  "specName": "Help & Clear Filters",
+  "specName": "MCP Setup for Any Agent Client",
   "branch": "main",
   "currentStep": "implement",
-  "status": "completed",
+  "status": "implementing",
   "history": [
     {
       "step": "specify",
       "substep": null,
       "kind": "start",
       "by": "extension",
-      "at": "2026-07-18T19:08:52.978Z"
+      "at": "2026-07-19T13:52:36.377Z"
     },
     {
       "step": "plan",
       "substep": null,
       "kind": "start",
       "by": "extension",
-      "at": "2026-07-18T19:12:39.347Z"
+      "at": "2026-07-19T13:56:25.494Z"
     },
     {
       "step": "tasks",
       "substep": null,
       "kind": "start",
       "by": "extension",
-      "at": "2026-07-18T19:14:59.573Z"
+      "at": "2026-07-19T14:05:23.345Z"
     },
     {
       "step": "implement",
@@ -32,7 +32,7 @@
       "task": "T001",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -40,7 +40,7 @@
       "task": "T002",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -48,7 +48,7 @@
       "task": "T003",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -56,7 +56,7 @@
       "task": "T004",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -64,7 +64,7 @@
       "task": "T005",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -72,7 +72,7 @@
       "task": "T006",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -80,7 +80,7 @@
       "task": "T007",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
@@ -88,23 +88,56 @@
       "task": "T008",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
       "substep": null,
+      "task": "T009",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T19:21:34.529Z"
+      "at": "2026-07-19T14:12:46.463Z"
     },
     {
       "step": "implement",
       "substep": null,
+      "task": "T010",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-18T22:31:41.317Z"
+      "at": "2026-07-19T14:12:46.463Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T011",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-19T14:12:46.463Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T012",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-19T14:12:46.463Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T014",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-19T14:12:46.463Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T015",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-19T14:12:46.463Z"
     }
   ],
-  "currentTask": "T008",
-  "telemetryInstanceId": "9c86a8cc-dd85-424a-b3c3-76c961350c34"
+  "currentTask": "T013"
 }

@@ -44,17 +44,17 @@ export const HELP_ENTRIES: readonly HelpEntry[] = [
     id: "bare-number",
     label: "Bare numbers",
     tier: "risky",
-    defaultOn: false,
+    defaultOn: true,
     description:
-      "A spec mentions a bare feature number without its slug. Risky — often coincidental — so it is off by default.",
+      "A spec mentions a bare feature number without its slug. Risky — matches can be coincidental — so toggle it off to hide these.",
   },
   {
     id: "spec-code",
     label: "Spec → code",
     tier: "layer",
-    defaultOn: false,
+    defaultOn: true,
     description:
-      "References from specs to source files / code types. An optional secondary layer, off by default.",
+      "References from specs to source files / code types. An optional secondary layer you can toggle off.",
   },
 ];
 

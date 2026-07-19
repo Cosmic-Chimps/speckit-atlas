@@ -15,7 +15,7 @@ export async function run(): Promise<void> {
     assert.equal(ext.isActive, true);
   });
 
-  test("E-2: exactly the two namespaced commands are contributed and registered", async () => {
+  test("E-2: the namespaced commands are contributed and registered", async () => {
     const ext = getSelf();
     assert.ok(ext);
     const contributed = (
@@ -23,11 +23,18 @@ export async function run(): Promise<void> {
     ).contributes.commands
       .map((c) => c.command)
       .sort();
-    assert.deepEqual(contributed, ["speckitAtlas.openMap", "speckitAtlas.refresh"]);
+    assert.deepEqual(contributed, [
+      "speckitAtlas.openMap",
+      "speckitAtlas.refresh",
+      "speckitAtlas.setupMcpClient",
+    ]);
+    // Every contributed command is namespaced under speckitAtlas.*
+    assert.ok(contributed.every((c) => c.startsWith("speckitAtlas.")));
 
     const registered = await vscode.commands.getCommands(true);
     assert.ok(registered.includes("speckitAtlas.openMap"));
     assert.ok(registered.includes("speckitAtlas.refresh"));
+    assert.ok(registered.includes("speckitAtlas.setupMcpClient"));
   });
 
   test("E-1b: focusing and refreshing the Map view do not throw", async () => {

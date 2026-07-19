@@ -33,6 +33,15 @@ export async function run(): Promise<void> {
       await (await import("../layout-drag.test.js")).run();
       await (await import("../layout-evolve.test.js")).run();
       break;
+    case "mcp-provider":
+    case "mcp-provider-multiroot":
+      // feature 007 — same run() adapts to single-root vs multi-root fixtures.
+      await (await import("../mcp-provider.test.js")).run();
+      break;
+    case "mcp-setup":
+      // feature 008 — the setup command generates a registration and writes nothing.
+      await (await import("../mcp-setup.test.js")).run();
+      break;
     default:
       throw new Error(`Unknown ATLAS_SUITE: ${suite}`);
   }

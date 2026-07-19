@@ -47,7 +47,8 @@ media/  test/  fixtures/
 - `002-spec-graph-model` — **done**: headless spec-relationship graph in pure `core/graph/`.
   `parseFeature` + `buildProjectGraph` + `buildWorkspaceGraph`. Edges tiered/weighted/
   toggleable: `link` (definitive, locked) → `slug-mention` (strong, count-weighted) →
-  `shared-entity` (medium, code-pinned) → `bare-number` (risky, off); optional `spec-code`.
+  `shared-entity` (medium, code-pinned) → `bare-number` (risky); optional `spec-code`. All
+  tiers are ON by default (each individually toggleable in the controls sidebar).
   Per-project scoping. Fills `MapViewModel.graph`. See `specs/002-spec-graph-model/`.
 - `003-graph-rendering` — **active (planned)**: render the graph. Center `WebviewPanel`
   (map) via `openMap` + sidebar `WebviewView` repurposed to controls (legend, heuristic
@@ -80,3 +81,22 @@ media/  test/  fixtures/
   control clears the store. No core change; new pure merge/prune helper +
   `extension/layoutStore.ts`; protocol adds `persistLayout`/`relayout`/`resetLayout` +
   render `savedPositions`/`savedViewport`. See `specs/006-persist-map-layout/`.
+- `007-mcp-provider-contribution` — **active (planned)**: installing the extension makes the
+  004 query surface auto-discoverable to in-editor AI agents (no npm install / MCP config).
+  Advertises the **existing** `dist/mcp.js` via VS Code's MCP server-definition provider
+  (`contributes.mcpServerDefinitionProviders` + `lm.registerMcpServerDefinitionProvider`);
+  one `McpStdioServerDefinition` per workspace folder (`--root <folder>`, launched via
+  `process.execPath` + `ELECTRON_RUN_AS_NODE=1`). Ships `dist/mcp.js` in the `.vsix`
+  (reverses 004's exclusion; keeps `cli.js` out); raises `engines.vscode` → `^1.101.0`.
+  Parity is structural (same server); read-only, offline (stdio), telemetry-free. New pure
+  `extension/mcpProvider.ts` (`buildServerDefinitions`); no core/query/server changes. See
+  `specs/007-mcp-provider-contribution/`.
+- `008-mcp-client-setup` — **active (planned)**: covers the MCP clients 007 can't reach
+  (Claude Code, Cursor, Claude Desktop — they don't read VS Code's registry). A command
+  `speckitAtlas.setupMcpClient` **generates** the exact registration for a chosen client
+  (`claude mcp add …` / `.cursor/mcp.json` / Claude Desktop JSON / generic stdio) scoped to
+  the workspace, then **copies/shows it** — writes nothing (Read-Only preserved, no
+  amendment; resolved decision). Reuses 007's `serverEntryPath` (bundled `dist/mcp.js`
+  default; npm `speckit-atlas-mcp` offered as alt). New pure `extension/mcpSetup.ts`
+  (`formatRegistration` + `CLIENTS`); no core/server changes; no new dep, no engine bump.
+  See `specs/008-mcp-client-setup/`.

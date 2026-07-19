@@ -17,6 +17,15 @@ import { rescanForChange, scanWorkspaceProjects } from "./projectScan.js";
 import { createSpecWatcher } from "./specWatcher.js";
 import { LayoutStore } from "./layoutStore.js";
 import { ALL_PROJECTS_BUCKET, type SavedMapLayout } from "./layoutModel.js";
+import { buildServerDefinitions, type McpServerDescriptor } from "./mcpProvider.js";
+import {
+  CLIENTS,
+  DEFAULT_SERVER_NAME,
+  bundledLaunchSpec,
+  composeSetupDocument,
+  formatRegistration,
+  type ClientId,
+} from "./mcpSetup.js";
 
 /** API returned from activate() for integration tests. */
 export interface AtlasApi {
@@ -39,6 +48,10 @@ export interface AtlasApi {
   simulatePersistLayout(msg: Extract<PanelToHost, { type: "persistLayout" }>): void;
   /** Feature 006 — apply the "Reset layout" control action. */
   resetLayout(): void;
+  /** Feature 007 — the MCP server descriptors advertised for the current workspace. */
+  getMcpServerDefinitions(): McpServerDescriptor[];
+  /** Feature 008 — the setup document the command would produce for a client (deterministic). */
+  generateMcpRegistration(client: ClientId, folderPath?: string): string;
 }
 
 /**
@@ -98,6 +111,92 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     }),
     vscode.commands.registerCommand("speckitAtlas.refresh", () => void refresh()),
     createSpecWatcher((changedPath) => void onFileChanged(changedPath)),
+  );
+
+  // Feature 007: advertise the bundled MCP query server (dist/mcp.js) to VS Code's MCP
+  // registry so in-editor agents discover the atlas_* tools on install — no npm install,
+  // no config. One stdio server per workspace folder, scoped with --root; launched via the
+  // editor's own Node. Read-only + offline (the server reuses the 004 read-only scan).
+  function mcpDescriptors(): McpServerDescriptor[] {
+    const folders = (vscode.workspace.workspaceFolders ?? []).map((f) => f.uri.fsPath);
+    return buildServerDefinitions({
+      folders,
+      extensionPath: context.extensionPath,
+      nodePath: process.execPath,
+      version: (context.extension?.packageJSON as { version?: string })?.version ?? "0.0.0",
+    });
+  }
+  function toStdioDefinition(d: McpServerDescriptor): vscode.McpStdioServerDefinition {
+    const def = new vscode.McpStdioServerDefinition(d.label, d.command, d.args, d.env, d.version);
+    def.cwd = vscode.Uri.file(d.cwd);
+    return def;
+  }
+  const didChangeMcp = new vscode.EventEmitter<void>();
+  context.subscriptions.push(
+    didChangeMcp,
+    // Re-advertise when the set of workspace folders changes (contract C-8).
+    vscode.workspace.onDidChangeWorkspaceFolders(() => didChangeMcp.fire()),
+    vscode.lm.registerMcpServerDefinitionProvider("speckitAtlas.mcp", {
+      onDidChangeMcpServerDefinitions: didChangeMcp.event,
+      provideMcpServerDefinitions: () => mcpDescriptors().map(toStdioDefinition),
+    }),
+  );
+
+  // Feature 008: generate (never write) an MCP registration for a non-VS-Code client
+  // (Claude Code, Cursor, Claude Desktop, generic). Copies the registration + opens an
+  // untitled doc with full instructions; touches no files (Read-Only).
+  function setupDocFor(client: ClientId, folder: string): string {
+    return composeSetupDocument({
+      client,
+      serverName: DEFAULT_SERVER_NAME,
+      projectRoot: folder,
+      extensionPath: context.extensionPath,
+      nodePath: process.execPath,
+    });
+  }
+  async function setupMcpClient(): Promise<void> {
+    const folders = vscode.workspace.workspaceFolders ?? [];
+    if (folders.length === 0) {
+      void vscode.window.showInformationMessage(
+        "SpecKit Atlas: open a Spec Kit workspace first, then run this command to connect your agent.",
+      );
+      return;
+    }
+    let folder = folders[0].uri.fsPath;
+    if (folders.length > 1) {
+      const pick = await vscode.window.showQuickPick(
+        folders.map((f) => ({ label: f.name, description: f.uri.fsPath })),
+        { title: "SpecKit Atlas: which project?", placeHolder: "Choose a workspace folder" },
+      );
+      if (!pick) {
+        return;
+      }
+      folder = pick.description;
+    }
+    const clientPick = await vscode.window.showQuickPick(
+      CLIENTS.map((c) => ({ label: c.label, description: c.hint, id: c.id })),
+      { title: "SpecKit Atlas: which agent client?", placeHolder: "Choose your MCP client" },
+    );
+    if (!clientPick) {
+      return;
+    }
+    const primary = formatRegistration({
+      client: clientPick.id,
+      launch: bundledLaunchSpec(context.extensionPath, process.execPath, folder),
+      projectRoot: folder,
+      serverName: DEFAULT_SERVER_NAME,
+    });
+    await vscode.env.clipboard.writeText(primary);
+    const doc = await vscode.workspace.openTextDocument({
+      content: setupDocFor(clientPick.id, folder),
+    });
+    await vscode.window.showTextDocument(doc, { preview: true });
+    void vscode.window.showInformationMessage(
+      `SpecKit Atlas: registration for ${clientPick.label} copied to clipboard — full instructions opened.`,
+    );
+  }
+  context.subscriptions.push(
+    vscode.commands.registerCommand("speckitAtlas.setupMcpClient", () => void setupMcpClient()),
   );
 
   void refresh();
@@ -213,6 +312,9 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     getSavedLayout: () => layoutStore.load(),
     simulatePersistLayout: (msg) => persistLayout(msg),
     resetLayout: () => onControlMessage({ type: "resetLayout" }),
+    getMcpServerDefinitions: () => mcpDescriptors(),
+    generateMcpRegistration: (client, folderPath) =>
+      setupDocFor(client, folderPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? ""),
   };
 }
 

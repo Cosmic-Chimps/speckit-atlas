@@ -28,6 +28,16 @@ This repository currently contains:
   and reopen the Map tab (and across editor restarts). New specs slot in without scrambling
   what's placed; a **Reset layout** control re-runs the automatic layout. Saved in the
   editor's `workspaceState` — no workspace files written, offline, telemetry-free.
+- **`007-mcp-provider-contribution`** — **in-editor agents discover the query tools on
+  install**. The extension advertises its bundled MCP server to the editor's MCP registry
+  (one stdio server per workspace folder), so an in-editor AI agent can call the `atlas_*`
+  tools with no `npm install` and no config. Read-only, offline, telemetry-free; requires
+  VS Code ≥ 1.101. Users on older editors, CI, and terminals keep the npm CLI/MCP.
+- **`008-mcp-client-setup`** — **connect any other agent in seconds**. The command
+  *SpecKit Atlas: Set up MCP for your agent* generates a paste-ready registration for
+  clients that don't read VS Code's registry (Claude Code, Cursor, Claude Desktop, or a
+  generic stdio form), scoped to your workspace, and copies it. The extension writes
+  nothing — you apply the config. Read-only, offline.
 
 ### Headless usage (feature 004)
 
