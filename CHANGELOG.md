@@ -6,6 +6,29 @@ All notable changes to this extension are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Focus on selection (`010-selection-focus-mode`): a new **"Focus on selection"** toggle in
+  the controls sidebar's **View** section scopes the map to the selected spec, its directly
+  connected neighbors, and the edges among that set — hiding everything else so a single
+  spec's neighborhood is legible on large graphs. Turning it off (or clearing the selection)
+  restores the full graph. Focus **hides** (display) and composes orthogonally with the tier/
+  status dimming filter; it preserves saved layout positions. Webview-only; no core change.
+
+- Selected spec is highlighted in the **Specs** list, with a related-spec count
+  (`010-selection-focus-mode`): selecting a spec — from the list or by clicking a node on the
+  map — now highlights that row in the sidebar and shows how many specs relate to it (e.g.
+  "2 related"). The highlight persists across refreshes and stays in sync between the list and
+  the map.
+
+### Fixed
+
+- Map selection no longer accumulates (`010-selection-focus-mode`): selecting specs from the
+  **Specs** list now replaces the previous selection instead of leaving a trail of
+  blue-bordered nodes — exactly one spec is highlighted at a time, consistent with clicking
+  nodes on the map. (Programmatic selection was additive; it now clears the prior selection
+  first.)
+
 ### Changed
 
 - **Relationships are now folder-name-based** (`009-folder-name-identity`): link and

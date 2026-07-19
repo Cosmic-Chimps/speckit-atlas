@@ -12,6 +12,7 @@ export const CONTROLS_VIEW_ID = "speckitAtlas.mapView";
 export class ControlsViewProvider implements vscode.WebviewViewProvider {
   private view: vscode.WebviewView | undefined;
   private lastState: Extract<HostToControls, { type: "state" }> | undefined;
+  private lastSelection: Extract<HostToControls, { type: "selection" }> | undefined;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -24,6 +25,13 @@ export class ControlsViewProvider implements vscode.WebviewViewProvider {
   setState(state: Extract<HostToControls, { type: "state" }>): void {
     this.lastState = state;
     void this.view?.webview.postMessage(state);
+  }
+
+  /** Feature 010 — echo the current selection (id + related-spec count) to the sidebar. */
+  setSelection(nodeId: string | null, relatedCount: number): void {
+    const msg = { type: "selection" as const, nodeId, relatedCount };
+    this.lastSelection = msg;
+    void this.view?.webview.postMessage(msg);
   }
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
@@ -40,8 +48,13 @@ export class ControlsViewProvider implements vscode.WebviewViewProvider {
       }
     });
     webview.onDidReceiveMessage((msg: ControlsToHost) => {
-      if (msg?.type === "ready" && this.lastState) {
-        void this.view?.webview.postMessage(this.lastState);
+      if (msg?.type === "ready") {
+        if (this.lastState) {
+          void this.view?.webview.postMessage(this.lastState);
+        }
+        if (this.lastSelection) {
+          void this.view?.webview.postMessage(this.lastSelection);
+        }
       }
       this.handlers.onMessage(msg);
     });

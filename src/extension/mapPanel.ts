@@ -84,6 +84,11 @@ export class MapPanel {
     this.post({ type: "filter", filterTier, filterStatus });
   }
 
+  /** Feature 010 — toggle focus-on-selection in the map webview. */
+  setFocusMode(enabled: boolean): void {
+    this.post({ type: "focusMode", enabled });
+  }
+
   get isOpen(): boolean {
     return this.panel !== undefined;
   }

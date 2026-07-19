@@ -4,6 +4,7 @@ import type { EdgeTier } from "../../core/index.js";
 import type { HostToPanel, NodePosition, PanelToHost, Viewport } from "../protocol.js";
 import { toCytoscapeElements, type CyEdgeData, type CyNodeData } from "./elements.js";
 import { centroidFor, classifySeed } from "./layout.js";
+import { buildAdjacency, computeFocusVisible } from "./focus.js";
 
 /** Bucket used when the map shows all projects (must match layoutModel.ALL_PROJECTS_BUCKET). */
 const ALL_PROJECTS = "__all__";
@@ -110,6 +111,11 @@ function stylesheet(): cytoscape.StylesheetStyle[] {
 
 let cy: Core | undefined;
 
+/** Feature 010 — the single currently-selected spec id (at most one); null when cleared. */
+let selectedNodeId: string | null = null;
+/** Feature 010 — whether focus-on-selection is enabled. Transient (not persisted). */
+let focusModeOn = false;
+
 function fullRelayout(): void {
   cy?.layout({ name: "cose", animate: false, padding: 30 }).run();
 }
@@ -141,7 +147,10 @@ function seedLayout(
   saved: Record<string, NodePosition> | null | undefined,
   viewport: Viewport | null | undefined,
 ): void {
-  const plan = classifySeed(saved, core.nodes().map((n) => n.id()));
+  const plan = classifySeed(
+    saved,
+    core.nodes().map((n) => n.id()),
+  );
   if (plan.mode === "none") {
     fullRelayout();
     return;
@@ -231,7 +240,6 @@ function updateInPlace(
 ): void {
   const pan = { ...core.pan() };
   const zoom = core.zoom();
-  const selected = core.$(":selected").map((e) => e.id());
 
   const newNodeIds = new Set(elements.filter((e) => e.group === "nodes").map((e) => e.data.id));
   const oldNodeIds = new Set(core.nodes().map((n) => n.id()));
@@ -272,16 +280,27 @@ function updateInPlace(
   }
   core.pan(pan);
   core.zoom(zoom);
-  for (const id of selected) {
-    core.getElementById(id).select();
+  // Feature 010 — re-apply the single tracked selection; drop it if the spec is gone
+  // (US1-4 / US2 "removed selection" edge case), then re-derive focus visibility.
+  if (selectedNodeId) {
+    const still = core.getElementById(selectedNodeId);
+    if (still && still.length > 0) {
+      still.select();
+    } else {
+      selectedNodeId = null;
+    }
   }
+  applyFocus();
 }
 
 function wireInteractions(core: Core): void {
   core.on("tap", "node", (evt) => {
     const n = evt.target as NodeSingular;
+    // Cytoscape single-selects on tap; track the id so focus mode can anchor to it (US1/US2).
+    selectedNodeId = n.id();
     showDetail(n.data() as CyNodeData);
     post({ type: "selectNode", nodeId: n.id() });
+    applyFocus();
   });
   core.on("tap", "edge", (evt) => {
     const e = evt.target as EdgeSingular;
@@ -289,8 +308,10 @@ function wireInteractions(core: Core): void {
   });
   core.on("tap", (evt) => {
     if (evt.target === core) {
+      selectedNodeId = null;
       hideDetail();
       post({ type: "selectNode", nodeId: null });
+      applyFocus();
     }
   });
 }
@@ -309,10 +330,51 @@ function wireReporting(core: Core): void {
 function focus(nodeId: string): void {
   const n = cy?.getElementById(nodeId);
   if (n && n.length > 0) {
-    cy?.animate({ center: { eles: n }, zoom: 1.4 }, { duration: 200 });
+    // Feature 010 (FR-001) — programmatic select is additive in Cytoscape, so clear the
+    // prior selection first; otherwise SPECS-list clicks accumulate blue borders.
+    cy?.$(":selected").unselect();
     n.select();
+    selectedNodeId = nodeId;
+    cy?.animate({ center: { eles: n }, zoom: 1.4 }, { duration: 200 });
     showDetail(n.data() as CyNodeData);
+    applyFocus();
   }
+}
+
+/**
+ * Feature 010 — derive and apply focus visibility from `{ focusModeOn, selectedNodeId }`.
+ * Focus HIDES out-of-neighborhood elements (display); it never touches the `.dimmed`
+ * opacity class owned by the tier/status filter (they compose orthogonally). Uses
+ * `show()/hide()` so persisted layout positions (feature 006) are undisturbed.
+ */
+function applyFocus(): void {
+  if (!cy) {
+    return;
+  }
+  const core = cy;
+  const adjacency = buildAdjacency(
+    core.edges().map((e) => ({
+      source: String(e.data("source")),
+      target: String(e.data("target")),
+    })),
+  );
+  const knownNodeIds = new Set(core.nodes().map((n) => n.id()));
+  const decision = computeFocusVisible(
+    adjacency,
+    focusModeOn ? selectedNodeId : null,
+    knownNodeIds,
+  );
+  core.batch(() => {
+    if (decision.showAll) {
+      core.elements().style("display", "element");
+      return;
+    }
+    const visibleNodes = core.nodes().filter((n) => decision.nodes.has(n.id()));
+    const inducedEdges = visibleNodes.edgesWith(visibleNodes);
+    core.elements().style("display", "none");
+    visibleNodes.style("display", "element");
+    inducedEdges.style("display", "element");
+  });
 }
 
 function applyFilter(tiers: readonly EdgeTier[] | null, statuses: readonly string[] | null): void {
@@ -403,6 +465,11 @@ window.addEventListener("message", (event: MessageEvent<HostToPanel>) => {
       // Reset layout (feature 006): discard seeded positions, re-run cose; the resulting
       // `layoutstop` re-persists the fresh arrangement via wireReporting.
       fullRelayout();
+      break;
+    case "focusMode":
+      // Feature 010 — toggle focus-on-selection and re-derive visibility.
+      focusModeOn = msg.enabled;
+      applyFocus();
       break;
     default:
       break;

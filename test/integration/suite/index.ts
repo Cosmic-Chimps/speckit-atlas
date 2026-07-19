@@ -24,6 +24,10 @@ export async function run(): Promise<void> {
     case "render":
       await (await import("../render.test.js")).run();
       break;
+    case "selection-focus":
+      // feature 010 — single-selection + focus-mode relay smoke.
+      await (await import("../selection-focus.test.js")).run();
+      break;
     case "render-multiroot":
       await (await import("../render-multiroot.test.js")).run();
       break;

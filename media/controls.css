@@ -70,6 +70,17 @@ ul.spec-list li {
 ul.spec-list li:hover {
   background: var(--vscode-list-hoverBackground);
 }
+/* feature 010 — the selected spec stays highlighted and shows its related-spec count */
+ul.spec-list li.selected {
+  background: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+ul.spec-list li .rel-count {
+  float: right;
+  margin-left: 0.5rem;
+  opacity: 0.75;
+  font-size: 0.85em;
+}
 
 /* Secondary buttons: Clear filters (US1, 005) and Reset layout (006) */
 button.clear-filters,

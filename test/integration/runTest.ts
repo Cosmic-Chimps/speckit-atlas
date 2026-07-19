@@ -20,6 +20,7 @@ async function main(): Promise<void> {
     { suite: "malformed", target: path.join(fixtures, "malformed-speckit") },
     { suite: "graph", target: path.join(fixtures, "graph", "cross-links") },
     { suite: "render", target: path.join(fixtures, "graph", "render-demo") },
+    { suite: "selection-focus", target: path.join(fixtures, "graph", "render-demo") },
     {
       suite: "render-multiroot",
       target: path.join(fixtures, "graph", "two-projects", "atlas.code-workspace"),

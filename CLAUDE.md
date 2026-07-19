@@ -112,3 +112,14 @@ media/  test/  fixtures/
   `nodeScan` unchanged. Byte-identical on sequential repos (SC-003). Fixture-driven
   (timestamp/mixed/unnumbered + sequential regression); no shell/renderer/query/CLI/MCP
   change. See `specs/009-folder-name-identity/`.
+- `010-selection-focus-mode` — **active (planned)**: two webview-only map refinements.
+  (1) **Single active selection** (bug fix): `focus()` called `n.select()` without clearing
+  the prior selection, so SPECS-list clicks accumulated blue borders — deselect before
+  select; keep one-selection invariant across map/background clicks and `updateInPlace`.
+  (2) **Focus mode** (new sidebar toggle): scope the map to the selected spec + its one-hop
+  neighbors + the induced edges among that set, hiding the rest; off (or cleared selection)
+  restores the full graph. Pure `src/webview/map/focus.ts` (`computeFocusVisible`) decides
+  the visible set; webview uses Cytoscape `show()/hide()` (preserves 006 positions). Hides
+  (display) vs. 005's dimming (opacity) → compose orthogonally. Protocol adds
+  `setFocusMode` (controls→host) + `focusMode` (host→panel); `mapPanel.setFocusMode`.
+  No core/query/CLI/MCP change; no new dep. See `specs/010-selection-focus-mode/`.

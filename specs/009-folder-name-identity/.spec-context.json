@@ -3,7 +3,7 @@
   "specName": "Folder-Name Identity for Relationships",
   "branch": "main",
   "currentStep": "implement",
-  "status": "implemented",
+  "status": "completed",
   "history": [
     {
       "step": "specify",
@@ -160,6 +160,13 @@
       "kind": "complete",
       "by": "extension",
       "at": "2026-07-19T15:47:42.119Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-19T16:03:23.336Z"
     }
   ],
   "currentTask": "T016"

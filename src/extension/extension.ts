@@ -48,6 +48,8 @@ export interface AtlasApi {
   simulatePersistLayout(msg: Extract<PanelToHost, { type: "persistLayout" }>): void;
   /** Feature 006 — apply the "Reset layout" control action. */
   resetLayout(): void;
+  /** Feature 010 — the current selection echoed to the sidebar (id + related-spec count). */
+  getSelection(): { nodeId: string; relatedCount: number } | null;
   /** Feature 007 — the MCP server descriptors advertised for the current workspace. */
   getMcpServerDefinitions(): McpServerDescriptor[];
   /** Feature 008 — the setup document the command would produce for a client (deterministic). */
@@ -62,6 +64,8 @@ export interface AtlasApi {
 export function activate(context: vscode.ExtensionContext): AtlasApi {
   let options: GraphOptions = { ...DEFAULT_GRAPH_OPTIONS };
   let activeProjectId: string | null = null;
+  // Feature 010 — the single selected spec (source of truth), echoed to the controls sidebar.
+  let selectedSpecId: string | null = null;
   let snapshots: ProjectSnapshot[] = [];
   let graph: WorkspaceGraph = { projects: [] };
   let lastModel: MapViewModel | undefined;
@@ -78,14 +82,17 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
   }
 
   function persistLayout(msg: Extract<PanelToHost, { type: "persistLayout" }>): void {
-    void layoutStore.save(msg.projectId, msg.positions, msg.viewport, nodeIdsForBucket(msg.projectId));
+    void layoutStore.save(
+      msg.projectId,
+      msg.positions,
+      msg.viewport,
+      nodeIdsForBucket(msg.projectId),
+    );
   }
 
   const panel = new MapPanel(context.extensionUri, {
     openSpec: (nodeId, projectId) => void openSpec(nodeId, projectId),
-    selectNode: () => {
-      /* selection is reflected in the panel's own detail pane */
-    },
+    selectNode: (nodeId) => pushSelection(nodeId),
     loadSaved: (pid) => {
       const bucket = pid ?? ALL_PROJECTS_BUCKET;
       const positions = layoutStore.positions(bucket) ?? {};
@@ -213,6 +220,31 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     }
   }
 
+  /** Feature 010 — how many distinct specs relate to `nodeId` in the current graph. */
+  function relatedCountFor(nodeId: string): number {
+    const neighbors = new Set<string>();
+    for (const p of graph.projects) {
+      for (const e of p.edges) {
+        if (e.source === nodeId) {
+          neighbors.add(e.target);
+        } else if (e.target === nodeId) {
+          neighbors.add(e.source);
+        }
+      }
+    }
+    return neighbors.size;
+  }
+
+  function specExists(id: string): boolean {
+    return graph.projects.some((p) => p.nodes.some((n) => n.id === id));
+  }
+
+  /** Feature 010 — record the selection and echo it (with its related count) to the sidebar. */
+  function pushSelection(nodeId: string | null): void {
+    selectedSpecId = nodeId;
+    controls.setSelection(nodeId, nodeId ? relatedCountFor(nodeId) : 0);
+  }
+
   function controlState(): Extract<HostToControls, { type: "state" }> {
     const specs: SpecRef[] = graph.projects.flatMap((p) =>
       p.nodes.map((n) => ({ id: n.id, projectId: n.projectId, title: n.title, status: n.status })),
@@ -243,6 +275,7 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     lastModel = model;
     panel.render(graph, options, activeProjectId);
     controls.setState(controlState());
+    reechoSelection();
     return model;
   }
 
@@ -250,6 +283,16 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     graph = buildWorkspaceGraph(snapshots, options);
     panel.render(graph, options, activeProjectId);
     controls.setState(controlState());
+    reechoSelection();
+  }
+
+  /** Feature 010 — after a (re)render, re-send the selection so the freshly-rebuilt SPECS
+   * list re-highlights it with an up-to-date related count; drop it if the spec is gone. */
+  function reechoSelection(): void {
+    if (selectedSpecId && !specExists(selectedSpecId)) {
+      selectedSpecId = null;
+    }
+    pushSelection(selectedSpecId);
   }
 
   function onControlMessage(msg: ControlsToHost): void {
@@ -268,9 +311,13 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
       case "focusSpec":
         panel.reveal();
         panel.focus(msg.nodeId);
+        pushSelection(msg.nodeId); // echo selection back so the SPECS list highlights it
         break;
       case "setFilter":
         panel.setFilter(msg.filterTier, msg.filterStatus);
+        break;
+      case "setFocusMode":
+        panel.setFocusMode(msg.enabled);
         break;
       case "resetLayout": {
         const bucket = activeProjectId ?? ALL_PROJECTS_BUCKET;
@@ -312,6 +359,10 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     getSavedLayout: () => layoutStore.load(),
     simulatePersistLayout: (msg) => persistLayout(msg),
     resetLayout: () => onControlMessage({ type: "resetLayout" }),
+    getSelection: () =>
+      selectedSpecId
+        ? { nodeId: selectedSpecId, relatedCount: relatedCountFor(selectedSpecId) }
+        : null,
     getMcpServerDefinitions: () => mcpDescriptors(),
     generateMcpRegistration: (client, folderPath) =>
       setupDocFor(client, folderPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? ""),

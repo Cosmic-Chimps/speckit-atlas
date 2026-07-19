@@ -1,6 +1,6 @@
 {
   "workflow": "speckit",
-  "specName": "MCP Setup for Any Agent Client",
+  "specName": "Selection & Focus Mode",
   "branch": "main",
   "currentStep": "implement",
   "status": "completed",
@@ -10,21 +10,21 @@
       "substep": null,
       "kind": "start",
       "by": "extension",
-      "at": "2026-07-19T13:52:36.377Z"
+      "at": "2026-07-19T16:10:10.331Z"
     },
     {
       "step": "plan",
       "substep": null,
       "kind": "start",
       "by": "extension",
-      "at": "2026-07-19T13:56:25.494Z"
+      "at": "2026-07-19T16:28:14.601Z"
     },
     {
       "step": "tasks",
       "substep": null,
       "kind": "start",
       "by": "extension",
-      "at": "2026-07-19T14:05:23.345Z"
+      "at": "2026-07-19T16:41:06.678Z"
     },
     {
       "step": "implement",
@@ -32,7 +32,7 @@
       "task": "T001",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.590Z"
     },
     {
       "step": "implement",
@@ -40,7 +40,7 @@
       "task": "T002",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.590Z"
     },
     {
       "step": "implement",
@@ -48,7 +48,7 @@
       "task": "T003",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.590Z"
     },
     {
       "step": "implement",
@@ -56,7 +56,7 @@
       "task": "T004",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.590Z"
     },
     {
       "step": "implement",
@@ -64,7 +64,7 @@
       "task": "T005",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.590Z"
     },
     {
       "step": "implement",
@@ -72,7 +72,7 @@
       "task": "T006",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.590Z"
     },
     {
       "step": "implement",
@@ -80,7 +80,7 @@
       "task": "T007",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
@@ -88,7 +88,7 @@
       "task": "T008",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
@@ -96,7 +96,7 @@
       "task": "T009",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
@@ -104,7 +104,7 @@
       "task": "T010",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
@@ -112,7 +112,7 @@
       "task": "T011",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
@@ -120,15 +120,15 @@
       "task": "T012",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
       "substep": null,
-      "task": "T014",
+      "task": "T013",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
@@ -136,15 +136,23 @@
       "task": "T015",
       "kind": "complete",
       "by": "extension",
-      "at": "2026-07-19T14:12:46.463Z"
+      "at": "2026-07-19T17:07:18.591Z"
+    },
+    {
+      "step": "implement",
+      "substep": null,
+      "task": "T016",
+      "kind": "complete",
+      "by": "extension",
+      "at": "2026-07-19T17:07:18.591Z"
     },
     {
       "step": "implement",
       "substep": null,
       "kind": "complete",
-      "by": "user",
-      "at": "2026-07-19T16:03:18.363Z"
+      "by": "ai",
+      "at": "2026-07-19T17:52:38.327Z"
     }
   ],
-  "currentTask": "T013"
+  "currentTask": "T014"
 }

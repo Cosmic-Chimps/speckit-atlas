@@ -22,6 +22,11 @@ const TOGGLES: { key: keyof GraphOptions; label: string; locked?: boolean }[] = 
 const TIERS: EdgeTier[] = ["definitive", "strong", "medium", "risky"];
 
 let lastSpecs: readonly SpecRef[] = [];
+/** Feature 010 — remember the focus toggle across control re-renders (state pushes). */
+let focusModeOn = false;
+/** Feature 010 — the selected spec (echoed by the host) and how many specs relate to it. */
+let selectedSpecId: string | null = null;
+let relatedCount = 0;
 
 function el(tag: string, text?: string): HTMLElement {
   const n = document.createElement(tag);
@@ -122,6 +127,24 @@ function renderState(state: Extract<HostToControls, { type: "state" }>): void {
   layoutSection.append(resetBtn);
   root.append(layoutSection);
 
+  // ── View (feature 010) — focus the map on the selected spec's neighborhood ──
+  const viewSection = el("section");
+  viewSection.append(el("h2", "View"));
+  const focusLabel = document.createElement("label");
+  focusLabel.className = "toggle";
+  const focusInput = document.createElement("input");
+  focusInput.type = "checkbox";
+  focusInput.className = "focus-mode";
+  focusInput.checked = focusModeOn; // preserved across state re-renders
+  focusInput.title = "Show only the selected spec, its direct neighbors, and their links";
+  focusInput.addEventListener("change", () => {
+    focusModeOn = focusInput.checked;
+    post({ type: "setFocusMode", enabled: focusInput.checked });
+  });
+  focusLabel.append(focusInput, document.createTextNode(" Focus on selection"));
+  viewSection.append(focusLabel);
+  root.append(viewSection);
+
   function onFilterChange(): void {
     emitFilter(tierChecks, statusSelect);
     const tierAll = tierChecks.every((c) => c.checked);
@@ -166,9 +189,11 @@ function renderState(state: Extract<HostToControls, { type: "state" }>): void {
     list.replaceChildren();
     for (const s of lastSpecs.filter((x) => x.title.toLowerCase().includes(q.toLowerCase()))) {
       const li = el("li", s.title);
+      li.dataset.specId = s.id;
       li.addEventListener("click", () => post({ type: "focusSpec", nodeId: s.id }));
       list.append(li);
     }
+    applySelectionHighlight(); // keep the selected row highlighted across re-renders (feature 010)
   };
   search.addEventListener("input", () => renderList(search.value));
   renderList("");
@@ -222,6 +247,26 @@ function renderHelp(): HTMLElement {
   return details;
 }
 
+/**
+ * Feature 010 — reflect the current selection in the SPECS list: highlight the selected
+ * row and show how many specs relate to it. Operates on the existing DOM (no re-render),
+ * and is also called at the end of renderList so the highlight survives state re-pushes.
+ */
+function applySelectionHighlight(): void {
+  const items = document.querySelectorAll<HTMLElement>("ul.spec-list li");
+  items.forEach((li) => {
+    const isSel = li.dataset.specId != null && li.dataset.specId === selectedSpecId;
+    li.classList.toggle("selected", isSel);
+    li.querySelector(".rel-count")?.remove();
+    if (isSel) {
+      const badge = document.createElement("span");
+      badge.className = "rel-count";
+      badge.textContent = relatedCount === 1 ? "1 related" : `${relatedCount} related`;
+      li.append(badge);
+    }
+  });
+}
+
 function emitFilter(tierChecks: HTMLInputElement[], statusSelect: HTMLSelectElement): void {
   const selectedTiers = TIERS.filter((_, i) => tierChecks[i]?.checked);
   const allTiers = selectedTiers.length === TIERS.length;
@@ -235,8 +280,13 @@ function emitFilter(tierChecks: HTMLInputElement[], statusSelect: HTMLSelectElem
 }
 
 window.addEventListener("message", (event: MessageEvent<HostToControls>) => {
-  if (event.data?.type === "state") {
-    renderState(event.data);
+  const data = event.data;
+  if (data?.type === "state") {
+    renderState(data);
+  } else if (data?.type === "selection") {
+    selectedSpecId = data.nodeId;
+    relatedCount = data.relatedCount;
+    applySelectionHighlight();
   }
 });
 

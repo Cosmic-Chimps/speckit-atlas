@@ -35,7 +35,9 @@ export type HostToPanel =
       readonly filterStatus: readonly string[] | null;
     }
   // feature 006 — discard seeded positions and run a fresh layout.
-  | { readonly type: "relayout" };
+  | { readonly type: "relayout" }
+  // feature 010 — scope the map to the selected spec's one-hop neighborhood (on/off).
+  | { readonly type: "focusMode"; readonly enabled: boolean };
 
 export type PanelToHost =
   | { readonly type: "ready" }
@@ -67,15 +69,23 @@ export interface SpecRef {
   readonly status: string | null;
 }
 
-export type HostToControls = {
-  readonly type: "state";
-  readonly options: GraphOptions;
-  readonly projects: readonly ProjectRef[];
-  readonly specs: readonly SpecRef[];
-  readonly activeProjectId: string | null;
-  // feature 006 — whether a saved arrangement exists for the active view (drives "Reset layout").
-  readonly resetEnabled?: boolean;
-};
+export type HostToControls =
+  | {
+      readonly type: "state";
+      readonly options: GraphOptions;
+      readonly projects: readonly ProjectRef[];
+      readonly specs: readonly SpecRef[];
+      readonly activeProjectId: string | null;
+      // feature 006 — whether a saved arrangement exists for the active view (drives "Reset layout").
+      readonly resetEnabled?: boolean;
+    }
+  // feature 010 — the host echoes the current selection so the SPECS list can highlight it
+  // (from either a list click or a map-node click) and show how many specs relate to it.
+  | {
+      readonly type: "selection";
+      readonly nodeId: string | null;
+      readonly relatedCount: number;
+    };
 
 export type ControlsToHost =
   | { readonly type: "ready" }
@@ -88,4 +98,6 @@ export type ControlsToHost =
       readonly filterStatus: readonly string[] | null;
     }
   // feature 006 — clear the active view's saved layout and re-run the automatic layout.
-  | { readonly type: "resetLayout" };
+  | { readonly type: "resetLayout" }
+  // feature 010 — toggle focus-on-selection (scope the map to the selection's neighborhood).
+  | { readonly type: "setFocusMode"; readonly enabled: boolean };
