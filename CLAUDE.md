@@ -27,7 +27,8 @@ rename before publishing.)
 
 - TypeScript `strict` (`any` justified inline; `// @ts-ignore` banned in `core/`).
 - esbuild bundle; `@vscode/vsce` package → VS Code Marketplace **and** Open VSX.
-- `engines.vscode` `^1.90.0` (explicit, tested floor).
+- `engines.vscode` `^1.101.0` (explicit, tested floor; raised from `1.90.0` in feature 007
+  for the MCP server-definition provider API).
 - Tests: `node:test` for `core/` (plain Node); `@vscode/test-electron` for
   integration. Fixture-driven — every parsing-heuristic change updates a fixture.
 
