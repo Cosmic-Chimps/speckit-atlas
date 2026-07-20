@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-20
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "From the map's spec detail panel (the FILES list added in feature 011), let the user see the diff — before and after — of the files that were modified to fulfill a spec. Two tiers: (P1) a per-file 'Open changes' action that opens the editor's built-in diff for that file; (P2) a spec-attributed changeset showing everything that changed to fulfill the selected spec. Introduces version control as a new data source; attribution is heuristic and degrades gracefully. Read-only, offline, telemetry-free; complement rather than reinvent the editor's diff/Timeline."
 

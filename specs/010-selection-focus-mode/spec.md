@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-19
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "in the layout when we select a spec under the specs section it moves and selects it with a blue border but it doesn't clear the other past blue ones. also we need a way to filter that when I select a node or a spec under the specs section I need to be able to toggle if I want to see the entire graph or just the nodes that connect with the one that I selected and their relations with other nodes"
 

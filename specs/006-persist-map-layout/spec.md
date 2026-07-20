@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-18
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "When we close the tab where is the graph and we open it again it looses everything we should keep the order of the nodes"
 

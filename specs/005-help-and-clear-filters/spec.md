@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-18
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "Add a help window to explain what Links, Slug mentions, Shared entities, etc. are; and add a way to clear the filter."
 

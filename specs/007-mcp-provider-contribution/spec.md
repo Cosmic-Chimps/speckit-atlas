@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-19
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "When a user installs the SpecKit Atlas extension, the extension should make its headless query surface (feature 004) automatically available to in-editor AI agents — with no separate npm install and no manual MCP config."
 

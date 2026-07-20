@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-18
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "Expose the spec-relationship model to agents and automation — a headless query surface over the feature-002 graph that runs outside the editor."
 

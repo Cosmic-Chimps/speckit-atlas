@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-19
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "Use the folder names as slugs/tags/identity for everything.
 A new spec based on 002-spec-graph-model, so relationships are detected regardless of the

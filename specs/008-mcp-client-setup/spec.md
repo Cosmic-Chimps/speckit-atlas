@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-19
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "Make MCP discovery work for any MCP client (Claude Code, Cursor, Claude Desktop, …), not just VS Code's built-in agent."
 

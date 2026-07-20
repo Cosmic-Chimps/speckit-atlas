@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-20
 
-**Status**: Draft
+**Status**: Completed
 
 **Input**: User description: "In the floating window at the right I think we should list the files that were modified to fulfill the specs. ordered by name"
 
