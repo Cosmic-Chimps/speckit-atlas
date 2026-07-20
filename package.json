@@ -64,6 +64,10 @@
       {
         "command": "speckitAtlas.showSpecsForFile",
         "title": "SpecKit Atlas: Show Specs for File"
+      },
+      {
+        "command": "speckitAtlas.viewGraphJson",
+        "title": "SpecKit Atlas: View Graph JSON"
       }
     ],
     "menus": {

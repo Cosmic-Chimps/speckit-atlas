@@ -55,6 +55,7 @@ export type {
 } from "./query/index.js";
 export {
   getGraph,
+  graphEnvelope,
   specRelationships,
   specsForFile,
   statusSummary,

@@ -161,3 +161,12 @@ media/  test/  fixtures/
   spec** (011 `openSpec`) or **Reveal + focus on map** (010 focus mode, with a small host→controls
   `focusMode` echo). Read-only, offline, telemetry-free; no new dep, no engine bump. See
   `specs/013-show-specs-for-file/`.
+- `014-view-graph-json` — **done**: a `speckitAtlas.viewGraphJson` command ("SpecKit
+  Atlas: View Graph JSON") that opens the graph the map is built from as pretty-printed JSON in an
+  untitled editor tab — the **existing 004 versioned `kind:"graph"` envelope** (same JSON as CLI
+  `graph` / MCP `atlas_graph`), scoped to the controls' active project selection. New tiny pure
+  `graphEnvelope(graph, scope?)` in `src/core/query/` composes `getGraph` + `toEnvelope` over the
+  in-memory graph (warnings derived from the scoped result); the command is a thin adapter
+  (feature-008 `openTextDocument` pattern). Read-only (opens a doc, writes no file), offline,
+  telemetry-free; palette-only; no `platform`/CLI/MCP/protocol/webview change, no new dep, no engine
+  bump. See `specs/014-view-graph-json/`.

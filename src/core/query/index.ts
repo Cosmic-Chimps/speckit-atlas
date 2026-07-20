@@ -14,6 +14,7 @@ export type {
 } from "./types.js";
 export {
   getGraph,
+  graphEnvelope,
   specRelationships,
   specsForFile,
   statusSummary,

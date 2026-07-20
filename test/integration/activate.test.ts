@@ -28,6 +28,7 @@ export async function run(): Promise<void> {
       "speckitAtlas.refresh",
       "speckitAtlas.setupMcpClient",
       "speckitAtlas.showSpecsForFile",
+      "speckitAtlas.viewGraphJson",
     ]);
     // Every contributed command is namespaced under speckitAtlas.*
     assert.ok(contributed.every((c) => c.startsWith("speckitAtlas.")));
@@ -37,6 +38,7 @@ export async function run(): Promise<void> {
     assert.ok(registered.includes("speckitAtlas.refresh"));
     assert.ok(registered.includes("speckitAtlas.setupMcpClient"));
     assert.ok(registered.includes("speckitAtlas.showSpecsForFile"));
+    assert.ok(registered.includes("speckitAtlas.viewGraphJson"));
   });
 
   test("E-1b: focusing and refreshing the Map view do not throw", async () => {

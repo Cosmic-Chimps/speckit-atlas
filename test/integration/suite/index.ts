@@ -54,6 +54,10 @@ export async function run(): Promise<void> {
       // feature 013 — reverse traceability: reverse lookup + reveal/focus + read-only open.
       await (await import("../specs-for-file.test.js")).run();
       break;
+    case "view-graph-json":
+      // feature 014 — view the graph model as JSON in an editor tab (read-only).
+      await (await import("../view-graph-json.test.js")).run();
+      break;
     default:
       throw new Error(`Unknown ATLAS_SUITE: ${suite}`);
   }

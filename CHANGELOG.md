@@ -8,6 +8,13 @@ All notable changes to this extension are documented here. The format follows
 
 ### Added
 
+- View Graph JSON (`014-view-graph-json`): a new **SpecKit Atlas: View Graph JSON** command
+  (Command Palette) opens the graph the map is built from as pretty-printed JSON in a new editor
+  tab — the same canonical, versioned `kind:"graph"` envelope the CLI `graph` command and the MCP
+  `atlas_graph` tool emit. The output follows the controls' current project selection (one project,
+  or the whole workspace). Read-only (opens an untitled document; writes no workspace file),
+  offline, and telemetry-free; no new dependency.
+
 - Show Specs for File (`013-show-specs-for-file`): the inverse of the Files list — from a source
   file, see which spec(s) reference it (code→spec reverse traceability). A new **SpecKit Atlas:
   Show Specs for File** command (Command Palette, editor/Explorer context menus, and editor title

@@ -5,6 +5,7 @@ import {
   buildMapViewModel,
   buildWorkspaceGraph,
   detectRoots,
+  graphEnvelope,
   specsForFile as querySpecsForFile,
   type GraphOptions,
   type MapViewModel,
@@ -70,6 +71,8 @@ export interface AtlasApi {
   revealSpecOnMap(nodeId: string): void;
   /** Feature 013 — whether focus mode is currently on (for assertions). */
   isFocusModeOn(): boolean;
+  /** Feature 014 — the graph JSON the "View Graph JSON" command would open (current scope). */
+  getGraphJson(): string;
   /** Feature 007 — the MCP server descriptors advertised for the current workspace. */
   getMcpServerDefinitions(): McpServerDescriptor[];
   /** Feature 008 — the setup document the command would produce for a client (deterministic). */
@@ -146,6 +149,7 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
       "speckitAtlas.showSpecsForFile",
       (uri?: vscode.Uri) => void showSpecsForFile(uri),
     ),
+    vscode.commands.registerCommand("speckitAtlas.viewGraphJson", () => void viewGraphJson()),
     createSpecWatcher((changedPath) => void onFileChanged(changedPath)),
   );
 
@@ -451,6 +455,30 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     return querySpecsForFile(graph, path, { projectId: projectId ?? null });
   }
 
+  // ── Feature 014 — View Graph JSON ─────────────────────────────────────────────
+
+  /**
+   * The versioned graph envelope for the current scope, pretty-printed. Scope follows the
+   * controls' active project selection; a stale/absent selection falls back to the whole
+   * workspace (feature 014, research R-4). Deterministic; the shared builder for the command
+   * and the test API.
+   */
+  function getGraphJson(): string {
+    const projectStillPresent =
+      activeProjectId != null && graph.projects.some((p) => p.projectId === activeProjectId);
+    const scope = projectStillPresent ? { projectId: activeProjectId } : undefined;
+    return JSON.stringify(graphEnvelope(graph, scope), null, 2);
+  }
+
+  /** Open the current graph as pretty-printed JSON in a new (untitled) editor tab (read-only). */
+  async function viewGraphJson(): Promise<void> {
+    const doc = await vscode.workspace.openTextDocument({
+      content: getGraphJson(),
+      language: "json",
+    });
+    await vscode.window.showTextDocument(doc, { preview: true });
+  }
+
   async function showSpecsForFile(uri?: vscode.Uri): Promise<void> {
     const target = uri ?? vscode.window.activeTextEditor?.document.uri;
     if (!target || target.scheme !== "file") {
@@ -550,6 +578,7 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     specsForFile: (path, projectId) => specsForFileQuery(path, projectId),
     revealSpecOnMap: (nodeId) => revealSpecOnMap(nodeId),
     isFocusModeOn: () => focusMode,
+    getGraphJson: () => getGraphJson(),
     getMcpServerDefinitions: () => mcpDescriptors(),
     generateMcpRegistration: (client, folderPath) =>
       setupDocFor(client, folderPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? ""),

@@ -1,9 +1,22 @@
-import type { ProjectGraph, RelationEdge, SpecNode, WorkspaceGraph } from "../model/types.js";
+import type {
+  ProjectGraph,
+  RelationEdge,
+  SpecNode,
+  Warning,
+  WorkspaceGraph,
+} from "../model/types.js";
 import { normalizeWorkspacePath } from "../path.js";
-import { sortEdges, sortNodes, sortProjectGraph, sortWorkspaceGraph } from "./envelope.js";
+import {
+  sortEdges,
+  sortNodes,
+  sortProjectGraph,
+  sortWorkspaceGraph,
+  toEnvelope,
+} from "./envelope.js";
 import type {
   CheckResult,
   Orphans,
+  QueryResult,
   QueryScope,
   RelatedSpec,
   SpecRelationships,
@@ -33,6 +46,19 @@ export function getGraph(graph: WorkspaceGraph, scope?: QueryScope): WorkspaceGr
       : { projectId: id, name: id, nodes: [], edges: [], warnings: [] };
   }
   return sortWorkspaceGraph(graph ?? { projects: [] });
+}
+
+/**
+ * Feature 014 — build the versioned `kind:"graph"` envelope from an already-built WorkspaceGraph
+ * (no scan): compose getGraph + toEnvelope, deriving warnings from the scoped result so they
+ * describe exactly the data returned. Pure, total, deterministic — the JSON the "View Graph JSON"
+ * command opens, and the same shape the CLI `graph` / MCP `atlas_graph` surfaces emit.
+ */
+export function graphEnvelope(graph: WorkspaceGraph, scope?: QueryScope): QueryResult {
+  const data = getGraph(graph, scope);
+  const warnings: readonly Warning[] =
+    "projects" in data ? data.projects.flatMap((p) => [...p.warnings]) : data.warnings;
+  return toEnvelope("graph", data, warnings);
 }
 
 export function specRelationships(
