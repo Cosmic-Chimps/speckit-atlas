@@ -38,6 +38,8 @@ export interface AtlasApi {
   getGraph(): WorkspaceGraph;
   /** Open a node's spec (the panel's click handler; exposed for tests). */
   openSpec(nodeId: string, projectId: string): Promise<void>;
+  /** Open a listed source file read-only (feature 011; exposed for tests). */
+  openFile(path: string, projectId: string): Promise<void>;
   /** Drive a controls message from tests without the controls webview. */
   applyControlMessage(msg: ControlsToHost): void;
   /** Simulate a debounced file change (deterministic incremental test hook). */
@@ -92,6 +94,7 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
 
   const panel = new MapPanel(context.extensionUri, {
     openSpec: (nodeId, projectId) => void openSpec(nodeId, projectId),
+    openFile: (path, projectId) => void openFile(path, projectId),
     selectNode: (nodeId) => pushSelection(nodeId),
     loadSaved: (pid) => {
       const bucket = pid ?? ALL_PROJECTS_BUCKET;
@@ -346,6 +349,29 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     }
   }
 
+  /**
+   * Feature 011 — open a workspace-relative source file read-only. Resolves strictly under the
+   * project root (rejects absolute or root-escaping paths); a missing/unsafe path warns and opens
+   * nothing (Principles II & III).
+   */
+  async function openFile(path: string, projectId: string): Promise<void> {
+    try {
+      const norm = (path ?? "").replace(/\\/g, "/");
+      const unsafe =
+        !norm || norm.startsWith("/") || /^[a-zA-Z]:/.test(norm) || norm.split("/").includes("..");
+      if (unsafe) {
+        throw new Error("unsafe path");
+      }
+      const uri = vscode.Uri.joinPath(vscode.Uri.parse(projectId), norm);
+      await vscode.workspace.fs.stat(uri); // throws if missing
+      await vscode.window.showTextDocument(uri, { preview: true });
+    } catch {
+      void vscode.window.showWarningMessage(
+        `SpecKit Atlas: could not open "${path}" (file missing or moved).`,
+      );
+    }
+  }
+
   return {
     refresh,
     getLastModel: () => lastModel,
@@ -354,6 +380,7 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     getPanelDiagnostics: () => panel.getDiagnostics(),
     getGraph: () => graph,
     openSpec: (nodeId, projectId) => openSpec(nodeId, projectId),
+    openFile: (path, projectId) => openFile(path, projectId),
     applyControlMessage: (msg) => onControlMessage(msg),
     notifyFileChanged: (changedPath) => onFileChanged(changedPath),
     getSavedLayout: () => layoutStore.load(),

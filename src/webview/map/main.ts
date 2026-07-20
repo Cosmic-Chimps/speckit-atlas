@@ -433,7 +433,39 @@ function showDetail(data: CyNodeData): void {
     post({ type: "openSpec", nodeId: data.id, projectId: data.projectId }),
   );
   root.append(open);
+  root.append(filesSection(data));
   document.body.classList.add("has-selection");
+}
+
+/** Feature 011 — the Files section: name-sorted, de-duplicated, each entry opens read-only. */
+function filesSection(data: CyNodeData): HTMLElement {
+  const section = document.createElement("div");
+  section.className = "files";
+  section.append(el("h3", "Files"));
+  const files = data.files ?? [];
+  if (files.length === 0) {
+    const empty = el("p", "No source files referenced");
+    empty.className = "files-empty";
+    section.append(empty);
+    return section;
+  }
+  const list = document.createElement("ul");
+  list.className = "files-list";
+  for (const path of files) {
+    const item = document.createElement("li");
+    const link = document.createElement("button");
+    link.type = "button";
+    link.className = "file-link";
+    link.textContent = path;
+    link.title = path;
+    link.addEventListener("click", () =>
+      post({ type: "openFile", path, projectId: data.projectId }),
+    );
+    item.append(link);
+    list.append(item);
+  }
+  section.append(list);
+  return section;
 }
 function showEdgeDetail(data: CyEdgeData): void {
   const root = detailRoot();

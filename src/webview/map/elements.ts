@@ -21,6 +21,8 @@ export interface CyNodeData {
   readonly total: number | null;
   readonly completeness: number; // 0..1 fraction of standard artifacts present
   readonly hasWarnings: boolean;
+  // feature 011 — source files this spec touches, de-duplicated and name-sorted for the detail panel.
+  readonly files: readonly string[];
   // presentational (from nodeStyleFor) — read directly by the cytoscape stylesheet
   readonly statusClass: string;
   readonly completion: number; // 0..1 task completion
@@ -98,6 +100,26 @@ export function statusClass(status: string | null): string {
   return "status-other";
 }
 
+/**
+ * Feature 011: de-duplicate by full path, then order ascending by file name (final segment,
+ * case-insensitive) with a full-path tiebreak. Pure, total, and deterministic (SC-002).
+ */
+export function sortFilesByName(paths: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const p of paths ?? []) {
+    if (typeof p === "string" && p && !seen.has(p)) {
+      seen.add(p);
+      unique.push(p);
+    }
+  }
+  const basename = (p: string): string => p.split("/").pop() ?? p;
+  return unique.sort((a, b) => {
+    const byName = basename(a).toLocaleLowerCase().localeCompare(basename(b).toLocaleLowerCase());
+    return byName !== 0 ? byName : a.localeCompare(b);
+  });
+}
+
 export function nodeStyleFor(node: SpecNode): NodeStyle {
   return {
     statusClass: statusClass(node.status),
@@ -139,6 +161,7 @@ function nodeElement(node: SpecNode): CyElement {
       total: node.taskCompletion?.total ?? null,
       completeness: completenessFraction(node),
       hasWarnings: (node.warnings?.length ?? 0) > 0,
+      files: sortFilesByName(node.codeReferences ?? []),
       statusClass: style.statusClass,
       completion: style.completion,
     },

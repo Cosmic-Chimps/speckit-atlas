@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildProjectGraph, parseFeature, type FeatureInput } from "../../src/core/index.js";
+import { extractCodeReferences } from "../../src/core/graph/heuristics.js";
 
 function feat(id: string, over: Partial<FeatureInput> = {}): FeatureInput {
   return { id, number: id.slice(0, 3), artifacts: ["spec"], files: {}, ...over };
@@ -74,6 +75,42 @@ test("G-12: a duplicated feature number is ambiguous → warning, no bare-number
   const g = graphOf([a, b, c], { bareNumbers: true });
   assert.ok(g.warnings.some((w) => w.code === "ambiguous-number"));
   assert.equal(g.edges.filter((e) => e.target === "002-b" || e.target === "003-c").length, 0);
+});
+
+test("011: extractCodeReferences captures backtick paths and relative links, normalized root-relative", () => {
+  const refs = extractCodeReferences(
+    "- [ ] T001 update `src/core/graph/heuristics.ts`\n" +
+      "see [helper](../../src/webview/map/elements.ts)\n" +
+      "and `./src/extension/extension.ts`",
+  );
+  const hints = new Set(refs.map((r) => r.targetHint));
+  assert.ok(hints.has("src/core/graph/heuristics.ts"), "backtick path");
+  assert.ok(hints.has("src/webview/map/elements.ts"), "relative link, `../` stripped");
+  assert.ok(hints.has("src/extension/extension.ts"), "leading `./` stripped");
+  for (const r of refs) {
+    assert.equal(r.kind, "code");
+    assert.ok(!r.targetHint.startsWith("."), "no leading ./ or ../ survives normalization");
+  }
+});
+
+test("011: extractCodeReferences excludes bare words, non-code extensions, and un-quoted prose", () => {
+  const hints = new Set(
+    extractCodeReferences(
+      "backtick bare word `heuristics`\n" +
+        "non-code `specs/011/plan.md` and `data.json`\n" +
+        "prose path src/extension/mapPanel.ts without backticks",
+    ).map((r) => r.targetHint),
+  );
+  assert.equal(hints.size, 0, `expected nothing, got ${[...hints].join(", ")}`);
+});
+
+test("011: extractCodeReferences de-duplicates and counts repeated mentions; total on garbage", () => {
+  const refs = extractCodeReferences("`src/a.ts` then `src/a.ts` again and [x](../src/a.ts)");
+  assert.equal(refs.length, 1, "one entry for the same path");
+  assert.equal(refs[0].targetHint, "src/a.ts");
+  assert.ok(refs[0].count >= 2, "count reflects repeats");
+  assert.deepEqual(extractCodeReferences(""), []);
+  assert.deepEqual(extractCodeReferences("no paths here at all"), []);
 });
 
 test("FR-014: disabling the dominant heuristic re-tiers a multi-supported edge, not deletes it", () => {

@@ -39,6 +39,8 @@ body.is-empty #empty {
   right: 0;
   top: 0;
   max-width: 320px;
+  max-height: 100%;
+  overflow-y: auto;
   padding: 0.75rem 1rem;
   background: var(--vscode-editorWidget-background);
   border-left: 1px solid var(--vscode-editorWidget-border, transparent);
@@ -64,4 +66,51 @@ body.has-selection #detail {
   padding: 0.3rem 0.75rem;
   cursor: pointer;
   border-radius: 2px;
+}
+
+/* feature 011 — Files section */
+#detail .files {
+  margin-top: 0.75rem;
+}
+#detail .files h3 {
+  font-size: 0.9em;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--vscode-descriptionForeground);
+}
+#detail .files-empty {
+  margin: 0;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+#detail .files-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+#detail .files-list li {
+  margin: 0;
+}
+#detail .file-link {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.15rem 0;
+  text-align: left;
+  color: var(--vscode-textLink-foreground);
+  background: none;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+#detail .file-link:hover {
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: underline;
 }

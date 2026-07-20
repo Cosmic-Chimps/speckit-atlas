@@ -1,6 +1,6 @@
 # SpecKit Atlas
 
-> ⚠️ **Working name.** "SpecKit Atlas" is a placeholder — confirm availability on the
+> "SpecKit Atlas" is a placeholder — confirm availability on the
 > VS Code Marketplace and Open VSX and rename before publishing.
 
 A VS Code extension that reads [GitHub Spec Kit](https://github.com/github/spec-kit)
@@ -59,6 +59,48 @@ MCP client config (e.g. Claude Code / Desktop):
 ```jsonc
 { "speckit-atlas": { "command": "npx", "args": ["speckit-atlas-mcp", "--root", "."] } }
 ```
+
+## Connect your AI agent (feature 008)
+
+**What it's for.** In-editor agents (VS Code's built-in agent / Copilot) discover the Atlas
+tools automatically the moment the extension is installed (feature 007). But agents that keep
+their **own** MCP configuration — **Claude Code, Cursor, Claude Desktop**, and other stdio
+clients — don't read VS Code's registry, so the tools never appear for them. This feature
+closes that gap.
+
+**Why connect it.** Once the `atlas_*` tools are wired in, your AI agent can reason about your
+specs from the **actual repository** instead of whatever you happen to paste into the chat.
+You can ask things like _"what depends on `004-agent-query-surface`?"_, _"which specs are
+orphaned?"_, or _"what's the implementation status across the project?"_ and get answers
+grounded in the same graph the map shows — deterministic, read-only, and offline. That means
+less manual context-wrangling, fewer hallucinated relationships, and an agent that can plan
+changes (or spot a spec nothing links to) with real dependency and status data. It's
+especially useful before editing a spec, during code review, or when onboarding to an
+unfamiliar Spec Kit repo.
+
+**How it helps.** Instead of hand-crafting a registration and hunting for the server's path,
+the extension generates the exact, copy-ready MCP registration for your chosen client, scoped
+to the current workspace, and copies it to the clipboard. Apply it once and your agent lists
+the five read-only `atlas_*` tools. The extension **writes no files** — it only generates and
+hands off the snippet — so it stays fully read-only and offline.
+
+**Set it up:**
+
+1. Open a Spec Kit workspace in VS Code.
+2. Command Palette (`⇧⌘P` / `Ctrl+Shift+P`) → **SpecKit Atlas: Set up MCP for your agent**.
+3. Pick your client:
+   - **Claude Code** → a `claude mcp add speckit-atlas -- …` command. Paste it into a terminal
+     and run it, then `/mcp` in Claude Code to confirm the tools appear.
+   - **Cursor** → a `.cursor/mcp.json` snippet — add it to that file.
+   - **Claude Desktop** → a `claude_desktop_config.json` block — add it and restart the app.
+   - **Other** → a generic stdio `command` + `args` form for any MCP client that speaks stdio.
+4. The registration is copied to your clipboard (and shown on screen). Apply it in your client.
+
+The generated config always targets a **real, present server**: the standalone
+`speckit-atlas-mcp` when it's installed, otherwise the extension's own bundled server by
+absolute path — so it works with nothing extra installed. Paths are correctly quoted (spaces
+and all), and in a multi-root workspace you choose the folder so the registration's `--root`
+is scoped to it. Regenerating is safe and idempotent.
 
 ## Principles (see `.specify/memory/constitution.md`)
 

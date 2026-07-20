@@ -11,6 +11,7 @@ interface AtlasApiLike {
   getPanelDiagnostics(): { nodeCount: number; edgeCount: number; ok: boolean } | undefined;
   getGraph(): WorkspaceGraph;
   openSpec(nodeId: string, projectId: string): Promise<void>;
+  openFile(path: string, projectId: string): Promise<void>;
   applyControlMessage(msg: ControlsToHost): void;
   notifyFileChanged(changedPath: string): Promise<void>;
 }
@@ -98,6 +99,31 @@ export async function run(): Promise<void> {
     } finally {
       await vscode.workspace.fs.writeFile(betaUri, Buffer.from(original));
     }
+  });
+
+  test("011: a spec's codeReferences reflect files named in its artifacts (end-to-end scan→parse→build)", async () => {
+    const a = await api();
+    await a.refresh();
+    const alpha = a.getGraph().projects[0].nodes.find((n) => n.id === "001-alpha");
+    assert.ok(alpha, "001-alpha present");
+    const refs = alpha.codeReferences ?? [];
+    assert.ok(
+      refs.includes("src/core/graph/heuristics.ts"),
+      `expected backtick path captured, got ${refs.join(", ")}`,
+    );
+    assert.ok(refs.includes("src/webview/map/elements.ts"), "second backtick path captured");
+  });
+
+  test("011: openFile opens an existing workspace file read-only; missing/unsafe handled", async () => {
+    const a = await api();
+    await a.refresh();
+    const proj = a.getGraph().projects[0];
+    await a.openFile("specs/001-alpha/spec.md", proj.projectId);
+    const active = vscode.window.activeTextEditor?.document.uri.path ?? "";
+    assert.ok(active.endsWith("specs/001-alpha/spec.md"), `opened ${active}`);
+    // Missing and root-escaping paths must not throw and must not open.
+    await assert.doesNotReject(() => a.openFile("does/not/exist.ts", proj.projectId));
+    await assert.doesNotReject(() => a.openFile("../../../../etc/passwd", proj.projectId));
   });
 
   await runAll("render");

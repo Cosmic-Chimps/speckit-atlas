@@ -23,8 +23,27 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** `code`: relative link to a source file. */
-const CODE_LINK_RE = /\]\((?:\.\.\/)+([^)]+\.(?:ts|tsx|cs|py|go|js|jsx))\)/g;
+/**
+ * `code`: source-file references. Feature 011 broadens capture beyond relative markdown links to
+ * the backtick-wrapped paths real `tasks.md` files use, so the detail panel can list the files a
+ * spec touches. Both forms are normalized to a workspace-root-relative path (leading `./`/`../`
+ * stripped) so the host can resolve them uniformly against the project root.
+ */
+const CODE_EXT = "ts|tsx|js|jsx|mjs|cjs|cs|py|go";
+/** A relative markdown link to a source file, e.g. `](../../src/foo.ts)`. */
+const CODE_LINK_RE = new RegExp(`\\]\\(((?:\\.{1,2}/)+[^)\\s]*\\.(?:${CODE_EXT}))\\)`, "g");
+/** Any single-backtick inline-code span (validated against CODE_TICK_OK below). */
+const CODE_TICK_RE = /`([^`\r\n]+)`/g;
+/** A backtick candidate qualifies only if it is a slash-bearing path ending in a source ext. */
+const CODE_TICK_OK = new RegExp(`^\\.{0,2}/?(?:[^\\s/]+/)+[^\\s/]+\\.(?:${CODE_EXT})$`);
+
+/** Normalize a captured path to workspace-root-relative: strip leading `./`/`../` segments. */
+function normalizeCodePath(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^(?:\.\.?\/)+/, "");
+}
 
 /** data-model entity heading pinned to a concrete code type/location. */
 const ENTITY_RE =
@@ -127,11 +146,19 @@ export function extractEntities(dataModelText: string): Reference[] {
   return [...out.values()];
 }
 
-/** Extract spec→code source-file references. */
+/**
+ * Extract spec→code source-file references (feature 011). Recognizes relative markdown links and
+ * backtick-wrapped workspace-relative paths; both are normalized to a root-relative path and
+ * de-duplicated. Total; never throws. Conservative: a candidate must contain a path separator and
+ * end in an allowed source extension, so bare identifiers and prose never match.
+ */
 export function extractCodeReferences(text: string): Reference[] {
   const out = new Map<string, Reference>();
-  for (const m of text.matchAll(CODE_LINK_RE)) {
-    const path = m[1];
+  const add = (raw: string): void => {
+    const path = normalizeCodePath(raw);
+    if (!path) {
+      return;
+    }
     const prev = out.get(path);
     out.set(path, {
       kind: "code",
@@ -139,6 +166,15 @@ export function extractCodeReferences(text: string): Reference[] {
       evidence: path,
       count: (prev?.count ?? 0) + 1,
     });
+  };
+  for (const m of text.matchAll(CODE_LINK_RE)) {
+    add(m[1]);
+  }
+  for (const m of text.matchAll(CODE_TICK_RE)) {
+    const candidate = m[1].trim();
+    if (CODE_TICK_OK.test(candidate)) {
+      add(candidate);
+    }
   }
   return [...out.values()];
 }

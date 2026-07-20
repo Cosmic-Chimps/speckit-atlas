@@ -1,2 +1,2 @@
-- [x] T001 done
-- [ ] T002 todo
+- [x] T001 done — update `src/core/graph/heuristics.ts`
+- [ ] T002 todo — add helper in `src/webview/map/elements.ts`

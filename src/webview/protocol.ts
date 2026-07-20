@@ -48,6 +48,8 @@ export type PanelToHost =
       readonly ok: boolean;
     }
   | { readonly type: "openSpec"; readonly nodeId: string; readonly projectId: string }
+  // feature 011 — open a source file listed in the detail panel, read-only, resolved under the project root.
+  | { readonly type: "openFile"; readonly path: string; readonly projectId: string }
   | { readonly type: "selectNode"; readonly nodeId: string | null }
   // feature 006 — the webview reports its settled/dragged arrangement for persistence.
   | {

@@ -6,6 +6,18 @@ All notable changes to this extension are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Modified-files list in the detail panel (`011-modified-files-panel`): selecting a spec on the
+  map now shows a **Files** section in the right-side detail panel listing the source files that
+  fulfill it — derived from the file paths named in the spec's own artifacts (`tasks.md` /
+  `plan.md` / `spec.md`), de-duplicated and ordered by file name. Each entry opens read-only for
+  viewing (like "Open spec"); a spec that references no source files shows a neutral empty state.
+  The list follows the on-by-default **"Spec → code layer"** toggle. To surface it, the pure
+  code-reference extractor was broadened to recognize backtick-wrapped paths (not just relative
+  markdown links) and to normalize every path to a workspace-root-relative form. Read-only,
+  offline; webview + a thin read-only host handler, no core-model or query change.
+
 ## [0.1.0] - 2026-07-19
 
 ### Added

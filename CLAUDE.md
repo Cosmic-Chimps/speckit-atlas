@@ -124,3 +124,14 @@ media/  test/  fixtures/
   (display) vs. 005's dimming (opacity) → compose orthogonally. Protocol adds
   `setFocusMode` (controls→host) + `focusMode` (host→panel); `mapPanel.setFocusMode`.
   No core/query/CLI/MCP change; no new dep. See `specs/010-selection-focus-mode/`.
+- `011-modified-files-panel` — **done**: the map's right-side detail panel now lists the source
+  files that fulfill the selected spec (a **Files** section), de-duplicated and ordered by file
+  name, each clickable to open read-only. Files are derived from the spec's own artifacts, not
+  version control: the pure `extractCodeReferences` was broadened to capture backtick-wrapped
+  paths (not just relative markdown links) and normalize every path to workspace-root-relative
+  (resolves the extract/resolve consistency gap). Surfaced via a new `files` field on the pure
+  `CyNodeData` (populated by `sortFilesByName` from `SpecNode.codeReferences`); rendered in
+  `showDetail`; protocol adds `openFile` (panel→host) handled read-only in `extension.openFile`
+  (resolves under project root, rejects escaping/absolute paths). Follows the on-by-default
+  `specToCode` toggle (D2); `codeReferences`/002/004 semantics unchanged. Fixture-driven
+  (`fixtures/graph/code-references/`); webview + thin host only. See `specs/011-modified-files-panel/`.

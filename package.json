@@ -2,11 +2,12 @@
   "name": "speckit-atlas",
   "displayName": "SpecKit Atlas",
   "description": "Render the relationships between GitHub Spec Kit specs alongside implementation status.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "CosmicChimps",
   "repository": "https://github.com/Cosmic-Chimps/speckit-atlas",
   "license": "MIT",
   "private": true,
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.101.0"
   },

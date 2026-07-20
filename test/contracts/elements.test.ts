@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   edgeStyleFor,
   nodeStyleFor,
+  sortFilesByName,
   statusClass,
   toCytoscapeElements,
   type CyEdgeData,
@@ -134,6 +135,40 @@ test("R-24: edgeStyleFor maps tier→line, weight→width, symmetric→arrow", (
 
   assert.equal(edgeStyleFor(edge("a", "b", { symmetric: true })).targetArrow, "none");
   assert.equal(edgeStyleFor(edge("a", "b")).targetArrow, "triangle");
+});
+
+test("011: sortFilesByName de-dupes and orders by basename (case-insensitive, full-path tiebreak)", () => {
+  const out = sortFilesByName([
+    "src/z/App.ts",
+    "src/a/app.ts",
+    "src/core/Beta.ts",
+    "src/z/App.ts", // duplicate
+    "src/core/alpha.ts",
+  ]);
+  // Ordered by basename: alpha.ts, app.ts, App.ts, Beta.ts — App.ts/app.ts share a basename → full-path tiebreak.
+  assert.deepEqual(out, ["src/core/alpha.ts", "src/a/app.ts", "src/z/App.ts", "src/core/Beta.ts"]);
+});
+
+test("011: sortFilesByName is total and deterministic (SC-002)", () => {
+  assert.deepEqual(sortFilesByName([]), []);
+  assert.deepEqual(sortFilesByName(["only.ts"]), ["only.ts"]);
+  const input = ["src/b.ts", "src/a.ts", "src/b.ts"];
+  assert.deepEqual(sortFilesByName(input), sortFilesByName(input), "identical output on repeat");
+});
+
+test("011: CyNodeData.files is populated from codeReferences, sorted & de-duped; [] when absent", () => {
+  const withFiles = toCytoscapeElements(
+    {
+      projects: [
+        project("P", [node("a", { codeReferences: ["src/b.ts", "src/a.ts", "src/b.ts"] })], []),
+      ],
+    },
+    null,
+  );
+  assert.deepEqual((withFiles[0].data as CyNodeData).files, ["src/a.ts", "src/b.ts"]);
+
+  const noFiles = toCytoscapeElements({ projects: [project("P", [node("a")], [])] }, null);
+  assert.deepEqual((noFiles[0].data as CyNodeData).files, []);
 });
 
 test("completeness fraction reflects present artifacts", () => {

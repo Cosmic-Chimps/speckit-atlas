@@ -33,6 +33,8 @@ export class MapPanel {
     private readonly extensionUri: vscode.Uri,
     private readonly handlers: {
       openSpec(nodeId: string, projectId: string): void;
+      /** Feature 011 — open a listed source file read-only, resolved under the project root. */
+      openFile(path: string, projectId: string): void;
       selectNode(nodeId: string | null): void;
       /** Resolve the saved arrangement for the given view (feature 006). */
       loadSaved?(activeProjectId: string | null): SavedLayout | null;
@@ -129,6 +131,9 @@ export class MapPanel {
         break;
       case "openSpec":
         this.handlers.openSpec(msg.nodeId, msg.projectId);
+        break;
+      case "openFile":
+        this.handlers.openFile(msg.path, msg.projectId);
         break;
       case "selectNode":
         this.handlers.selectNode(msg.nodeId);

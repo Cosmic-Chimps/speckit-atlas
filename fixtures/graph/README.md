@@ -18,6 +18,7 @@ references.
 | `bare-numbers/` | `001-a` says "see 002 for rationale" | no edge by default; risky edge only with `bareNumbers: true` |
 | `messy-status/` | `**Status**: Implemented (authored retroactively)␠␠` | status extracted verbatim, trailing whitespace trimmed |
 | `malformed/` | `001-thin` with no heading / broken front-matter | partial node (title = slug), no throw, warning if applicable |
+| `code-references/` (feature 011) | `001-with-code` names source files in `tasks.md`/`spec.md` (backtick paths + relative links, plus bare-word / non-code / un-quoted decoys); `002-no-code` names none | `001-with-code.codeReferences` = `{src/core/graph/heuristics.ts, src/webview/map/elements.ts, src/extension/extension.ts, src/webview/protocol.ts}` (root-relative, de-duped); `002-no-code.codeReferences` = `[]` (drives the panel empty state) |
 
 Every parsing/heuristic change MUST update a fixture (or an in-memory core test) and
 assert the resulting model (constitution: fixture-driven parsing).
