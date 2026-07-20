@@ -9,3 +9,4 @@ fixtures/
 specs/
 .specify/
 CLAUDE.md
+.claude/
