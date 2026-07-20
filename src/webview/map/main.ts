@@ -437,11 +437,26 @@ function showDetail(data: CyNodeData): void {
   document.body.classList.add("has-selection");
 }
 
-/** Feature 011 — the Files section: name-sorted, de-duplicated, each entry opens read-only. */
+/** Feature 011 — the Files section: name-sorted, de-duplicated, each entry opens read-only.
+ *  Feature 012 — a spec-level "See all changes" action and a per-file "Open changes" affordance. */
 function filesSection(data: CyNodeData): HTMLElement {
   const section = document.createElement("div");
   section.className = "files";
-  section.append(el("h3", "Files"));
+
+  const header = document.createElement("div");
+  header.className = "files-header";
+  header.append(el("h3", "Files"));
+  const seeAll = document.createElement("button");
+  seeAll.type = "button";
+  seeAll.className = "changeset-link";
+  seeAll.textContent = "See all changes";
+  seeAll.title = "Open the diff of everything changed to fulfill this spec";
+  seeAll.addEventListener("click", () =>
+    post({ type: "showChangeset", nodeId: data.id, projectId: data.projectId }),
+  );
+  header.append(seeAll);
+  section.append(header);
+
   const files = data.files ?? [];
   if (files.length === 0) {
     const empty = el("p", "No source files referenced");
@@ -461,7 +476,15 @@ function filesSection(data: CyNodeData): HTMLElement {
     link.addEventListener("click", () =>
       post({ type: "openFile", path, projectId: data.projectId }),
     );
-    item.append(link);
+    const diff = document.createElement("button");
+    diff.type = "button";
+    diff.className = "file-diff";
+    diff.textContent = "changes";
+    diff.title = `Open before/after changes for ${path}`;
+    diff.addEventListener("click", () =>
+      post({ type: "openFileDiff", path, projectId: data.projectId, nodeId: data.id }),
+    );
+    item.append(link, diff);
     list.append(item);
   }
   section.append(list);

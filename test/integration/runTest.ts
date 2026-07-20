@@ -32,6 +32,7 @@ async function main(): Promise<void> {
       target: path.join(fixtures, "graph", "two-projects", "atlas.code-workspace"),
     },
     { suite: "mcp-setup", target: path.join(fixtures, "graph", "render-demo") },
+    { suite: "git-changes", target: path.join(fixtures, "graph", "render-demo") },
   ];
 
   for (const scenario of scenarios) {

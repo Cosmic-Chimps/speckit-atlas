@@ -50,6 +50,15 @@ export type PanelToHost =
   | { readonly type: "openSpec"; readonly nodeId: string; readonly projectId: string }
   // feature 011 — open a source file listed in the detail panel, read-only, resolved under the project root.
   | { readonly type: "openFile"; readonly path: string; readonly projectId: string }
+  // feature 012 — open one listed file's before/after diff in the editor's own diff view.
+  | {
+      readonly type: "openFileDiff";
+      readonly path: string;
+      readonly projectId: string;
+      readonly nodeId: string;
+    }
+  // feature 012 — open the spec's full attributed changeset in the native multi-file diff editor.
+  | { readonly type: "showChangeset"; readonly nodeId: string; readonly projectId: string }
   | { readonly type: "selectNode"; readonly nodeId: string | null }
   // feature 006 — the webview reports its settled/dragged arrangement for persistence.
   | {

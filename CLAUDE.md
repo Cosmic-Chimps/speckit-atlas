@@ -135,3 +135,16 @@ media/  test/  fixtures/
   (resolves under project root, rejects escaping/absolute paths). Follows the on-by-default
   `specToCode` toggle (D2); `codeReferences`/002/004 semantics unchanged. Fixture-driven
   (`fixtures/graph/code-references/`); webview + thin host only. See `specs/011-modified-files-panel/`.
+- `012-file-change-diff` — **done**: from a selected spec, see the before/after diff of what changed
+  to fulfill it. Per-file **"Open changes"** on each 011 Files entry opens the editor's own diff
+  (`vscode.diff`); spec-level **"See all changes"** opens the native multi-file diff (`vscode.changes`).
+  **First feature to read version control** — strictly **read-only + offline** via the built-in
+  `vscode.git` extension API (no new dependency, no process spawning, no network, no VCS mutation);
+  recorded as a deliberate expansion in the plan's Complexity Tracking (Principles III/VI hold).
+  Attribution = pure `extension/attribution.ts` (`candidateBranchName` + `chooseBasis`): spec-named
+  branch base → commit-range fallback (first commit touching `specs/<id>/`) → honest "couldn't
+  determine"; toggle `speckitAtlas.diff.attribution` (`auto`/`branch`/`range`/`off`). Baseline =
+  spec start → current (cumulative change). Git I/O confined to `extension/gitChanges.ts` (+ vendored
+  `git.d.ts` types); protocol adds `openFileDiff`/`showChangeset`. Pure attribution unit-tested;
+  integration asserts the read-only no-throw degradation contract (the harness disables git). See
+  `specs/012-file-change-diff/`.

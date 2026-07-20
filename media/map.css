@@ -72,12 +72,51 @@ body.has-selection #detail {
 #detail .files {
   margin-top: 0.75rem;
 }
+#detail .files-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
 #detail .files h3 {
   font-size: 0.9em;
   margin: 0 0 0.25rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--vscode-descriptionForeground);
+}
+/* feature 012 — diff affordances */
+#detail .changeset-link {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+  font-size: 0.8em;
+}
+#detail .changeset-link:hover {
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: underline;
+}
+#detail .files-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+#detail .file-diff {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 0.2rem;
+  background: none;
+  border: none;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font-size: 0.75em;
+}
+#detail .file-diff:hover {
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: underline;
 }
 #detail .files-empty {
   margin: 0;

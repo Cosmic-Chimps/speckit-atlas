@@ -35,6 +35,10 @@ export class MapPanel {
       openSpec(nodeId: string, projectId: string): void;
       /** Feature 011 — open a listed source file read-only, resolved under the project root. */
       openFile(path: string, projectId: string): void;
+      /** Feature 012 — open one listed file's before/after diff in the editor's diff view. */
+      openFileDiff(nodeId: string, path: string, projectId: string): void;
+      /** Feature 012 — open the spec's full attributed changeset in the multi-file diff editor. */
+      showChangeset(nodeId: string, projectId: string): void;
       selectNode(nodeId: string | null): void;
       /** Resolve the saved arrangement for the given view (feature 006). */
       loadSaved?(activeProjectId: string | null): SavedLayout | null;
@@ -134,6 +138,12 @@ export class MapPanel {
         break;
       case "openFile":
         this.handlers.openFile(msg.path, msg.projectId);
+        break;
+      case "openFileDiff":
+        this.handlers.openFileDiff(msg.nodeId, msg.path, msg.projectId);
+        break;
+      case "showChangeset":
+        this.handlers.showChangeset(msg.nodeId, msg.projectId);
         break;
       case "selectNode":
         this.handlers.selectNode(msg.nodeId);

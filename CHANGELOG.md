@@ -8,6 +8,16 @@ All notable changes to this extension are documented here. The format follows
 
 ### Added
 
+- Before/after diff from a spec (`012-file-change-diff`): the detail panel now lets you see what
+  changed to fulfill a spec. Each file in the Files list gains an **"Open changes"** action that
+  opens the editor's own before/after diff, and a spec-level **"See all changes"** opens the native
+  multi-file diff for everything attributed to the spec. This is the first feature to read version
+  control — **read-only and offline** (built-in Git extension API + built-in diff views; no new
+  dependency, no network, no VCS mutation). Attribution uses a documented, **toggleable** heuristic
+  (`speckitAtlas.diff.attribution`: `auto` → spec-named branch base, else the commit range from when
+  the spec was added; `branch`/`range`/`off`), and degrades to a clear "couldn't determine" message
+  rather than a wrong changeset. Complements — does not reinvent — the editor's diff/Timeline.
+
 - Modified-files list in the detail panel (`011-modified-files-panel`): selecting a spec on the
   map now shows a **Files** section in the right-side detail panel listing the source files that
   fulfill it — derived from the file paths named in the spec's own artifacts (`tasks.md` /

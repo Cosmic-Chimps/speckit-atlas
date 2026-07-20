@@ -46,6 +46,10 @@ export async function run(): Promise<void> {
       // feature 008 — the setup command generates a registration and writes nothing.
       await (await import("../mcp-setup.test.js")).run();
       break;
+    case "git-changes":
+      // feature 012 — before/after diff: read-only, no-throw degradation (git disabled in-harness).
+      await (await import("../git-changes.test.js")).run();
+      break;
     default:
       throw new Error(`Unknown ATLAS_SUITE: ${suite}`);
   }

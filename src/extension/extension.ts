@@ -19,6 +19,11 @@ import { LayoutStore } from "./layoutStore.js";
 import { ALL_PROJECTS_BUCKET, type SavedMapLayout } from "./layoutModel.js";
 import { buildServerDefinitions, type McpServerDescriptor } from "./mcpProvider.js";
 import {
+  openFileDiff as gitOpenFileDiff,
+  showChangeset as gitShowChangeset,
+} from "./gitChanges.js";
+import type { AttributionSetting } from "./attribution.js";
+import {
   CLIENTS,
   DEFAULT_SERVER_NAME,
   bundledLaunchSpec,
@@ -40,6 +45,10 @@ export interface AtlasApi {
   openSpec(nodeId: string, projectId: string): Promise<void>;
   /** Open a listed source file read-only (feature 011; exposed for tests). */
   openFile(path: string, projectId: string): Promise<void>;
+  /** Open one file's before/after diff (feature 012; exposed for tests). */
+  openFileDiff(nodeId: string, path: string, projectId: string): Promise<void>;
+  /** Open the spec's attributed changeset (feature 012; exposed for tests). */
+  showChangeset(nodeId: string, projectId: string): Promise<void>;
   /** Drive a controls message from tests without the controls webview. */
   applyControlMessage(msg: ControlsToHost): void;
   /** Simulate a debounced file change (deterministic incremental test hook). */
@@ -95,6 +104,8 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
   const panel = new MapPanel(context.extensionUri, {
     openSpec: (nodeId, projectId) => void openSpec(nodeId, projectId),
     openFile: (path, projectId) => void openFile(path, projectId),
+    openFileDiff: (nodeId, path, projectId) => void openFileDiff(nodeId, path, projectId),
+    showChangeset: (nodeId, projectId) => void showChangeset(nodeId, projectId),
     selectNode: (nodeId) => pushSelection(nodeId),
     loadSaved: (pid) => {
       const bucket = pid ?? ALL_PROJECTS_BUCKET;
@@ -372,6 +383,24 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     }
   }
 
+  /** Feature 012 — the configured attribution basis (FR-006 toggle). */
+  function attributionSetting(): AttributionSetting {
+    const v = vscode.workspace
+      .getConfiguration("speckitAtlas")
+      .get<string>("diff.attribution", "auto");
+    return v === "branch" || v === "range" || v === "off" ? v : "auto";
+  }
+
+  /** Feature 012 — open one listed file's before/after diff (read-only; degrades to a message). */
+  async function openFileDiff(nodeId: string, path: string, projectId: string): Promise<void> {
+    await gitOpenFileDiff(nodeId, path, projectId, attributionSetting());
+  }
+
+  /** Feature 012 — open the spec's full attributed changeset (read-only; degrades to a message). */
+  async function showChangeset(nodeId: string, projectId: string): Promise<void> {
+    await gitShowChangeset(nodeId, projectId, attributionSetting());
+  }
+
   return {
     refresh,
     getLastModel: () => lastModel,
@@ -381,6 +410,8 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     getGraph: () => graph,
     openSpec: (nodeId, projectId) => openSpec(nodeId, projectId),
     openFile: (path, projectId) => openFile(path, projectId),
+    openFileDiff: (nodeId, path, projectId) => openFileDiff(nodeId, path, projectId),
+    showChangeset: (nodeId, projectId) => showChangeset(nodeId, projectId),
     applyControlMessage: (msg) => onControlMessage(msg),
     notifyFileChanged: (changedPath) => onFileChanged(changedPath),
     getSavedLayout: () => layoutStore.load(),

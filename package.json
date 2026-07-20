@@ -67,7 +67,29 @@
         "id": "speckitAtlas.mcp",
         "label": "SpecKit Atlas"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "SpecKit Atlas",
+      "properties": {
+        "speckitAtlas.diff.attribution": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "branch",
+            "range",
+            "off"
+          ],
+          "enumDescriptions": [
+            "Prefer the spec-named branch's base; fall back to the commit range from when the spec was added.",
+            "Only use the spec-named branch's base (no commit-range fallback).",
+            "Only use the commit range from when the spec's folder was added.",
+            "Disable the spec-attributed changeset (per-file \"Open changes\" still works)."
+          ],
+          "default": "auto",
+          "markdownDescription": "How SpecKit Atlas decides which version-control changes fulfilled a spec, for the detail panel's before/after diff. Read-only, local git only."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run build -- --production",
