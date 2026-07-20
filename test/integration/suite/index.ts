@@ -50,6 +50,10 @@ export async function run(): Promise<void> {
       // feature 012 — before/after diff: read-only, no-throw degradation (git disabled in-harness).
       await (await import("../git-changes.test.js")).run();
       break;
+    case "specs-for-file":
+      // feature 013 — reverse traceability: reverse lookup + reveal/focus + read-only open.
+      await (await import("../specs-for-file.test.js")).run();
+      break;
     default:
       throw new Error(`Unknown ATLAS_SUITE: ${suite}`);
   }

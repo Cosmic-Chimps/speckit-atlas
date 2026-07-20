@@ -9,6 +9,7 @@ import type {
   ProjectGraph,
   QueryResult,
   SpecRelationships,
+  SpecsForFile,
   StatusSummary,
   WorkspaceGraph,
 } from "../../src/core/index.js";
@@ -75,6 +76,41 @@ test("CLI-9 / feature 009: timestamp-numbered specs are discovered and connected
     proj.edges.some((e) => e.heuristic === "slug-mention"),
     "slug-mention edge across timestamp folders",
   );
+});
+
+test("CLI-10 / feature 013: specs-for-file returns the reverse-lookup envelope (exact match)", () => {
+  // render-demo/001-alpha references `src/core/graph/heuristics.ts` in its tasks.md.
+  const { status, env } = json(["specs-for-file", "src/core/graph/heuristics.ts", "--root", demo]);
+  assert.equal(status, 0);
+  assert.equal(env.kind, "file");
+  const d = env.data as SpecsForFile;
+  assert.equal(d.path, "src/core/graph/heuristics.ts");
+  assert.ok(
+    d.matches.some((m) => m.specId === "001-alpha" && m.matchKind === "exact"),
+    "001-alpha is an exact match",
+  );
+});
+
+test("CLI-11 / feature 013: unreferenced file → exit 0 with empty matches; missing <path> → exit 2", () => {
+  const none = json(["specs-for-file", "src/nope/missing.ts", "--root", demo]);
+  assert.equal(none.status, 0);
+  assert.deepEqual((none.env.data as SpecsForFile).matches, []);
+
+  const usage = run(["specs-for-file", "--root", demo]); // no <path>
+  assert.equal(usage.status, 2);
+});
+
+test("CLI-12 / feature 013: --format text renders the file lookup", () => {
+  const out = run([
+    "specs-for-file",
+    "src/core/graph/heuristics.ts",
+    "--root",
+    demo,
+    "--format",
+    "text",
+  ]);
+  assert.match(out.stdout, /# specs for src\/core\/graph\/heuristics\.ts/);
+  assert.match(out.stdout, /001-alpha/);
 });
 
 test("CLI-3: status + orphans envelopes", () => {

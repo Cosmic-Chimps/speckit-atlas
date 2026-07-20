@@ -1,4 +1,5 @@
 import type { Reference } from "../model/types.js";
+import { normalizeWorkspacePath } from "../path.js";
 
 /**
  * Pure extraction of raw, unresolved reference candidates from one feature's text.
@@ -37,12 +38,13 @@ const CODE_TICK_RE = /`([^`\r\n]+)`/g;
 /** A backtick candidate qualifies only if it is a slash-bearing path ending in a source ext. */
 const CODE_TICK_OK = new RegExp(`^\\.{0,2}/?(?:[^\\s/]+/)+[^\\s/]+\\.(?:${CODE_EXT})$`);
 
-/** Normalize a captured path to workspace-root-relative: strip leading `./`/`../` segments. */
+/**
+ * Normalize a captured path to workspace-root-relative: strip leading `./`/`../` segments.
+ * Delegates to the shared `normalizeWorkspacePath` so feature-013's reverse lookup normalizes
+ * query paths identically (single source of truth).
+ */
 function normalizeCodePath(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\\/g, "/")
-    .replace(/^(?:\.\.?\/)+/, "");
+  return normalizeWorkspacePath(raw);
 }
 
 /** data-model entity heading pinned to a concrete code type/location. */

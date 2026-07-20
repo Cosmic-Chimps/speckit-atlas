@@ -287,6 +287,14 @@ window.addEventListener("message", (event: MessageEvent<HostToControls>) => {
     selectedSpecId = data.nodeId;
     relatedCount = data.relatedCount;
     applySelectionHighlight();
+  } else if (data?.type === "focusMode") {
+    // feature 013 — a programmatic focus-mode change (e.g. "Reveal + focus on map"); keep the
+    // remembered state and the live checkbox in sync so the toggle never drifts.
+    focusModeOn = data.enabled;
+    const box = document.querySelector<HTMLInputElement>("input.focus-mode");
+    if (box) {
+      box.checked = data.enabled;
+    }
   }
 });
 

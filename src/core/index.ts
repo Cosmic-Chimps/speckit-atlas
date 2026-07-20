@@ -48,11 +48,15 @@ export type {
   StatusSummary,
   Orphans,
   CheckResult,
+  MatchKind,
+  RelatedSpec,
+  SpecsForFile,
   QueryResult,
 } from "./query/index.js";
 export {
   getGraph,
   specRelationships,
+  specsForFile,
   statusSummary,
   orphans,
   runCheck,
@@ -60,3 +64,4 @@ export {
   toEnvelope,
   formatText,
 } from "./query/index.js";
+export { normalizeWorkspacePath } from "./path.js";

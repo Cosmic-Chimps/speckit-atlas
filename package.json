@@ -60,8 +60,41 @@
       {
         "command": "speckitAtlas.setupMcpClient",
         "title": "SpecKit Atlas: Set up MCP for your agent"
+      },
+      {
+        "command": "speckitAtlas.showSpecsForFile",
+        "title": "SpecKit Atlas: Show Specs for File"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "speckitAtlas.showSpecsForFile",
+          "when": "editorIsOpen || resourceScheme == file"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "speckitAtlas.showSpecsForFile",
+          "when": "resourceScheme == file",
+          "group": "navigation@100"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "speckitAtlas.showSpecsForFile",
+          "when": "resourceScheme == file",
+          "group": "navigation@100"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "speckitAtlas.showSpecsForFile",
+          "when": "resourceScheme == file",
+          "group": "navigation"
+        }
+      ]
+    },
     "mcpServerDefinitionProviders": [
       {
         "id": "speckitAtlas.mcp",

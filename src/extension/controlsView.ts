@@ -13,6 +13,7 @@ export class ControlsViewProvider implements vscode.WebviewViewProvider {
   private view: vscode.WebviewView | undefined;
   private lastState: Extract<HostToControls, { type: "state" }> | undefined;
   private lastSelection: Extract<HostToControls, { type: "selection" }> | undefined;
+  private lastFocusMode: Extract<HostToControls, { type: "focusMode" }> | undefined;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -31,6 +32,13 @@ export class ControlsViewProvider implements vscode.WebviewViewProvider {
   setSelection(nodeId: string | null, relatedCount: number): void {
     const msg = { type: "selection" as const, nodeId, relatedCount };
     this.lastSelection = msg;
+    void this.view?.webview.postMessage(msg);
+  }
+
+  /** Feature 013 — echo focus-mode state so the sidebar toggle reflects programmatic changes. */
+  setFocusMode(enabled: boolean): void {
+    const msg = { type: "focusMode" as const, enabled };
+    this.lastFocusMode = msg;
     void this.view?.webview.postMessage(msg);
   }
 
@@ -54,6 +62,9 @@ export class ControlsViewProvider implements vscode.WebviewViewProvider {
         }
         if (this.lastSelection) {
           void this.view?.webview.postMessage(this.lastSelection);
+        }
+        if (this.lastFocusMode) {
+          void this.view?.webview.postMessage(this.lastFocusMode);
         }
       }
       this.handlers.onMessage(msg);

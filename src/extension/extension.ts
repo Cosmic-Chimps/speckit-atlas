@@ -1,12 +1,15 @@
 import * as vscode from "vscode";
+import * as nodePath from "node:path";
 import {
   DEFAULT_GRAPH_OPTIONS,
   buildMapViewModel,
   buildWorkspaceGraph,
   detectRoots,
+  specsForFile as querySpecsForFile,
   type GraphOptions,
   type MapViewModel,
   type ProjectSnapshot,
+  type SpecsForFile,
   type WorkspaceGraph,
 } from "../core/index.js";
 import type { ControlsToHost, HostToControls, PanelToHost, SpecRef } from "../webview/protocol.js";
@@ -61,6 +64,12 @@ export interface AtlasApi {
   resetLayout(): void;
   /** Feature 010 — the current selection echoed to the sidebar (id + related-spec count). */
   getSelection(): { nodeId: string; relatedCount: number } | null;
+  /** Feature 013 — reverse lookup for a workspace file (mirrors the command's core call). */
+  specsForFile(path: string, projectId?: string): SpecsForFile;
+  /** Feature 013 — reveal + focus a spec on the map (the "Reveal + focus on map" action). */
+  revealSpecOnMap(nodeId: string): void;
+  /** Feature 013 — whether focus mode is currently on (for assertions). */
+  isFocusModeOn(): boolean;
   /** Feature 007 — the MCP server descriptors advertised for the current workspace. */
   getMcpServerDefinitions(): McpServerDescriptor[];
   /** Feature 008 — the setup document the command would produce for a client (deterministic). */
@@ -77,6 +86,8 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
   let activeProjectId: string | null = null;
   // Feature 010 — the single selected spec (source of truth), echoed to the controls sidebar.
   let selectedSpecId: string | null = null;
+  // Feature 013 — focus-mode state (source of truth), kept in sync with the sidebar toggle.
+  let focusMode = false;
   let snapshots: ProjectSnapshot[] = [];
   let graph: WorkspaceGraph = { projects: [] };
   let lastModel: MapViewModel | undefined;
@@ -131,6 +142,10 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
       panel.reveal();
     }),
     vscode.commands.registerCommand("speckitAtlas.refresh", () => void refresh()),
+    vscode.commands.registerCommand(
+      "speckitAtlas.showSpecsForFile",
+      (uri?: vscode.Uri) => void showSpecsForFile(uri),
+    ),
     createSpecWatcher((changedPath) => void onFileChanged(changedPath)),
   );
 
@@ -331,6 +346,7 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
         panel.setFilter(msg.filterTier, msg.filterStatus);
         break;
       case "setFocusMode":
+        focusMode = msg.enabled; // sidebar-initiated; the checkbox already reflects it
         panel.setFocusMode(msg.enabled);
         break;
       case "resetLayout": {
@@ -383,6 +399,116 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
     }
   }
 
+  // ── Feature 013 — Show Specs for File (reverse traceability) ──────────────────
+
+  /** Set focus mode from a programmatic source (the command): panel + echo the sidebar toggle. */
+  function setFocusModeState(enabled: boolean): void {
+    focusMode = enabled;
+    panel.setFocusMode(enabled);
+    controls.setFocusMode(enabled);
+  }
+
+  /** Reveal + focus a spec on the map (the "Reveal + focus on map" quick-pick action). */
+  function revealSpecOnMap(nodeId: string): void {
+    panel.reveal();
+    panel.focus(nodeId);
+    pushSelection(nodeId);
+    setFocusModeState(true); // scope the view to the spec + its neighbors (feature 010)
+  }
+
+  /**
+   * Resolve a file URI to the graph project that owns it + the file's path relative to that
+   * project root (the same root `codeReferences` are stored against). Picks the most specific
+   * (longest) matching root. Returns null when no project contains the file.
+   */
+  function resolveFileToProject(
+    fileUri: vscode.Uri,
+  ): { projectId: string; relPath: string } | null {
+    const fp = fileUri.fsPath;
+    let best: { projectId: string; relPath: string; rootLen: number } | null = null;
+    for (const p of graph.projects) {
+      let rootPath: string;
+      try {
+        rootPath = vscode.Uri.parse(p.projectId).fsPath;
+      } catch {
+        continue;
+      }
+      const rel = nodePath.relative(rootPath, fp);
+      const inside = rel !== "" && !rel.startsWith("..") && !nodePath.isAbsolute(rel);
+      if (inside && (!best || rootPath.length > best.rootLen)) {
+        best = {
+          projectId: p.projectId,
+          relPath: rel.replace(/\\/g, "/"),
+          rootLen: rootPath.length,
+        };
+      }
+    }
+    return best ? { projectId: best.projectId, relPath: best.relPath } : null;
+  }
+
+  /** The core reverse lookup over the in-memory graph (shared by the command and the test API). */
+  function specsForFileQuery(path: string, projectId?: string): SpecsForFile {
+    return querySpecsForFile(graph, path, { projectId: projectId ?? null });
+  }
+
+  async function showSpecsForFile(uri?: vscode.Uri): Promise<void> {
+    const target = uri ?? vscode.window.activeTextEditor?.document.uri;
+    if (!target || target.scheme !== "file") {
+      void vscode.window.showInformationMessage("SpecKit Atlas: open or select a file first.");
+      return;
+    }
+    const resolved = resolveFileToProject(target);
+    if (!resolved) {
+      void vscode.window.showInformationMessage(
+        "SpecKit Atlas: no related specs — this file is outside a Spec Kit project.",
+      );
+      return;
+    }
+    const result = specsForFileQuery(resolved.relPath, resolved.projectId);
+    if (result.matches.length === 0) {
+      void vscode.window.showInformationMessage(
+        options.specToCode
+          ? `SpecKit Atlas: no specs reference "${resolved.relPath}".`
+          : 'SpecKit Atlas: enable the "Spec → code layer" toggle to see which specs reference this file.',
+      );
+      return;
+    }
+
+    // Single-match shortcut (FR-013): skip the spec-selection list.
+    let chosen = result.matches[0];
+    if (result.matches.length > 1) {
+      const pick = await vscode.window.showQuickPick(
+        result.matches.map((m) => ({
+          label: m.specId,
+          description: m.matchKind === "folder" ? `${m.title}  · folder` : m.title,
+          detail: m.status ? `status: ${m.status}` : undefined,
+          match: m,
+        })),
+        { title: `Specs for ${result.path}`, placeHolder: "Select a related spec" },
+      );
+      if (!pick) {
+        return;
+      }
+      chosen = pick.match;
+    }
+
+    const action = await vscode.window.showQuickPick(
+      [
+        { label: "$(go-to-file) Open spec", id: "open" as const },
+        { label: "$(target) Reveal + focus on map", id: "reveal" as const },
+      ],
+      { title: chosen.specId, placeHolder: "What would you like to do?" },
+    );
+    if (!action) {
+      return;
+    }
+    if (action.id === "open") {
+      await openSpec(chosen.specId, chosen.projectId);
+    } else {
+      revealSpecOnMap(chosen.specId);
+    }
+  }
+
   /** Feature 012 — the configured attribution basis (FR-006 toggle). */
   function attributionSetting(): AttributionSetting {
     const v = vscode.workspace
@@ -421,6 +547,9 @@ export function activate(context: vscode.ExtensionContext): AtlasApi {
       selectedSpecId
         ? { nodeId: selectedSpecId, relatedCount: relatedCountFor(selectedSpecId) }
         : null,
+    specsForFile: (path, projectId) => specsForFileQuery(path, projectId),
+    revealSpecOnMap: (nodeId) => revealSpecOnMap(nodeId),
+    isFocusModeOn: () => focusMode,
     getMcpServerDefinitions: () => mcpDescriptors(),
     generateMcpRegistration: (client, folderPath) =>
       setupDocFor(client, folderPath ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? ""),

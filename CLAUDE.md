@@ -148,3 +148,16 @@ media/  test/  fixtures/
   `git.d.ts` types); protocol adds `openFileDiff`/`showChangeset`. Pure attribution unit-tested;
   integration asserts the read-only no-throw degradation contract (the harness disables git). See
   `specs/012-file-change-diff/`.
+- `013-show-specs-for-file` — **done**: the inverse of 011 — from a source file, show
+  which spec(s) reference it (code→spec reverse traceability). One **pure** `specsForFile(graph,
+  path, scope?)` in the 004 query layer (`src/core/query/`) inverts each `SpecNode.codeReferences`
+  (011, artifact-derived, offline, deterministic — **no git**); the same function backs a new editor
+  command, the CLI (`specs-for-file <path>`), and the MCP tool (`atlas_specs_for_file`) via the
+  existing `platform/runQuery` fan-out. Match = **exact-file first, folder fallback** (only when no
+  exact match; `matchKind` label; root-level-file guard). New `QueryKind "file"` +
+  `SpecsForFile`/`RelatedSpec`; a shared `src/core/path.ts` normalizer (extracted from 011's
+  `normalizeCodePath`) keeps the query path normalized identically to stored refs. Command
+  `speckitAtlas.showSpecsForFile` (palette + editor/explorer/title menus) → quick pick → **Open
+  spec** (011 `openSpec`) or **Reveal + focus on map** (010 focus mode, with a small host→controls
+  `focusMode` echo). Read-only, offline, telemetry-free; no new dep, no engine bump. See
+  `specs/013-show-specs-for-file/`.

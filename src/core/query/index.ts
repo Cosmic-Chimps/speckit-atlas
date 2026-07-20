@@ -7,11 +7,15 @@ export type {
   StatusSummary,
   Orphans,
   CheckResult,
+  MatchKind,
+  RelatedSpec,
+  SpecsForFile,
   QueryResult,
 } from "./types.js";
 export {
   getGraph,
   specRelationships,
+  specsForFile,
   statusSummary,
   orphans,
   runCheck,

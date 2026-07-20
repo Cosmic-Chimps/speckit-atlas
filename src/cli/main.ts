@@ -12,6 +12,7 @@ const USAGE = `speckit-atlas <command> [options]
 commands:
   graph                     the whole graph (all projects, or --project)
   spec <spec-id>            a spec's dependsOn / dependedOnBy
+  specs-for-file <path>     which spec(s) reference a source file (reverse traceability)
   status                    implementation-status / completeness summary
   orphans                   isolated specs
   check [--rule no-orphans] evaluate a rule; exit 1 on failure
@@ -59,6 +60,7 @@ export function run(argv: readonly string[]): number {
   const kinds: Record<string, QueryKind> = {
     graph: "graph",
     spec: "spec",
+    "specs-for-file": "file",
     status: "status",
     orphans: "orphans",
     check: "check",
@@ -70,6 +72,10 @@ export function run(argv: readonly string[]): number {
   }
   if (kind === "spec" && !positionals[1]) {
     process.stderr.write(`"spec" requires a <spec-id>\n\n${USAGE}`);
+    return 2;
+  }
+  if (kind === "file" && !positionals[1]) {
+    process.stderr.write(`"specs-for-file" requires a <path>\n\n${USAGE}`);
     return 2;
   }
 
@@ -86,6 +92,7 @@ export function run(argv: readonly string[]): number {
     root: values.root ?? process.cwd(),
     kind,
     specId: positionals[1],
+    path: positionals[1],
     rule: values.rule,
     projectId: values.project ?? null,
     options,

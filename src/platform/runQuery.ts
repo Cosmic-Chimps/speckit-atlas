@@ -4,6 +4,7 @@ import {
   orphans,
   runCheck,
   specRelationships,
+  specsForFile,
   statusSummary,
   toEnvelope,
   type GraphOptions,
@@ -18,6 +19,8 @@ export interface RunQueryInput {
   readonly root: string;
   readonly kind: QueryKind;
   readonly specId?: string;
+  /** For kind "file": the file path to reverse-look-up (workspace-root-relative). */
+  readonly path?: string;
   readonly rule?: string;
   readonly projectId?: string | null;
   readonly options?: Partial<GraphOptions>;
@@ -39,6 +42,8 @@ export function runQuery(input: RunQueryInput): QueryResult {
       return toEnvelope("graph", getGraph(graph, scope), warnings);
     case "spec":
       return toEnvelope("spec", specRelationships(graph, input.specId ?? "", scope), warnings);
+    case "file":
+      return toEnvelope("file", specsForFile(graph, input.path ?? "", scope), warnings);
     case "status":
       return toEnvelope("status", statusSummary(graph, scope), warnings);
     case "orphans":

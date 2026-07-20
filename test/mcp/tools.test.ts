@@ -7,6 +7,7 @@ import type {
   CheckResult,
   QueryResult,
   SpecRelationships,
+  SpecsForFile,
   WorkspaceGraph,
 } from "../../src/core/index.js";
 
@@ -31,7 +32,7 @@ function envelope(res: unknown): QueryResult {
   return JSON.parse(content[0].text) as QueryResult;
 }
 
-test("MCP-1: lists exactly the five tools", async () => {
+test("MCP-1: lists exactly the six tools", async () => {
   await withClient(demo, async (c) => {
     const { tools } = await c.listTools();
     assert.deepEqual(tools.map((t) => t.name).sort(), [
@@ -39,8 +40,12 @@ test("MCP-1: lists exactly the five tools", async () => {
       "atlas_graph",
       "atlas_orphans",
       "atlas_spec_relationships",
+      "atlas_specs_for_file",
       "atlas_status_summary",
     ]);
+    // The reverse-lookup tool requires a path.
+    const sff = tools.find((t) => t.name === "atlas_specs_for_file");
+    assert.deepEqual(sff?.inputSchema.required, ["path"]);
   });
 });
 
@@ -63,6 +68,21 @@ test("MCP-3: atlas_spec_relationships — found + unknown id", async () => {
       await c.callTool({ name: "atlas_spec_relationships", arguments: { specId: "999-nope" } }),
     );
     assert.equal((miss.data as SpecRelationships).found, false);
+  });
+});
+
+test("MCP-5 / feature 013: atlas_specs_for_file returns the reverse-lookup envelope (parity)", async () => {
+  await withClient(demo, async (c) => {
+    const env = envelope(
+      await c.callTool({
+        name: "atlas_specs_for_file",
+        arguments: { path: "src/core/graph/heuristics.ts" },
+      }),
+    );
+    assert.equal(env.kind, "file");
+    const d = env.data as SpecsForFile;
+    assert.equal(d.path, "src/core/graph/heuristics.ts");
+    assert.ok(d.matches.some((m) => m.specId === "001-alpha" && m.matchKind === "exact"));
   });
 });
 

@@ -1,10 +1,13 @@
 import type { ProjectGraph, RelationEdge, SpecNode, WorkspaceGraph } from "../model/types.js";
+import { normalizeWorkspacePath } from "../path.js";
 import { sortEdges, sortNodes, sortProjectGraph, sortWorkspaceGraph } from "./envelope.js";
 import type {
   CheckResult,
   Orphans,
   QueryScope,
+  RelatedSpec,
   SpecRelationships,
+  SpecsForFile,
   StatusSummary,
 } from "./types.js";
 
@@ -62,6 +65,56 @@ export function specRelationships(
     dependsOn: sortEdges(dependsOn),
     dependedOnBy: sortEdges(dependedOnBy),
   };
+}
+
+/**
+ * Feature 013 — reverse traceability: which spec(s) reference `path`. Inverts each
+ * `SpecNode.codeReferences` (feature 011, artifact-derived; present only when `specToCode` is
+ * on). Match rule: exact workspace-root-relative path first; if — and only if — there is no
+ * exact match, fall back to specs referencing the file's containing folder. Pure, total,
+ * deterministic. Never consults git/fs/network (data source = 011 references only).
+ */
+export function specsForFile(
+  graph: WorkspaceGraph,
+  path: string,
+  scope?: QueryScope,
+): SpecsForFile {
+  const p = normalizeWorkspacePath(path);
+  if (p === "") {
+    return { path: "", matches: [] };
+  }
+  const dir = p.includes("/") ? p.slice(0, p.lastIndexOf("/")) : "";
+  const folderPrefix = dir === "" ? null : dir + "/";
+
+  const exact: RelatedSpec[] = [];
+  const folder: RelatedSpec[] = [];
+  for (const proj of scopedProjects(graph, scope)) {
+    for (const n of proj.nodes) {
+      const refs = n.codeReferences ?? [];
+      if (refs.includes(p)) {
+        exact.push(toRelated(n, "exact"));
+      } else if (folderPrefix && refs.some((r) => r.startsWith(folderPrefix))) {
+        folder.push(toRelated(n, "folder"));
+      }
+    }
+  }
+  // Folder matches are a fallback only when no exact match exists anywhere in scope (FR-003).
+  const matches = (exact.length > 0 ? exact : folder).sort(compareRelated);
+  return { path: p, matches };
+}
+
+function toRelated(n: SpecNode, matchKind: RelatedSpec["matchKind"]): RelatedSpec {
+  return { specId: n.id, projectId: n.projectId, title: n.title, status: n.status, matchKind };
+}
+
+const MATCH_RANK: Record<RelatedSpec["matchKind"], number> = { exact: 0, folder: 1 };
+
+function compareRelated(a: RelatedSpec, b: RelatedSpec): number {
+  return (
+    MATCH_RANK[a.matchKind] - MATCH_RANK[b.matchKind] ||
+    a.projectId.localeCompare(b.projectId) ||
+    a.specId.localeCompare(b.specId)
+  );
 }
 
 export function statusSummary(graph: WorkspaceGraph, scope?: QueryScope): StatusSummary {

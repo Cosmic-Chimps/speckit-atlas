@@ -96,6 +96,12 @@ export type HostToControls =
       readonly type: "selection";
       readonly nodeId: string | null;
       readonly relatedCount: number;
+    }
+  // feature 013 — the host echoes focus-mode state so the sidebar toggle stays in sync when
+  // focus mode is changed programmatically (e.g. the "Reveal + focus on map" command action).
+  | {
+      readonly type: "focusMode";
+      readonly enabled: boolean;
     };
 
 export type ControlsToHost =

@@ -58,6 +58,20 @@ const TOOLS: readonly ToolDef[] = [
     },
   },
   {
+    name: "atlas_specs_for_file",
+    kind: "file",
+    description:
+      "Which spec(s) reference/relate to a source file (reverse traceability). Derived from spec artifacts (feature 011), no git.",
+    inputSchema: {
+      type: "object",
+      required: ["path"],
+      properties: {
+        path: { type: "string", description: "File path relative to the workspace root." },
+        ...COMMON,
+      },
+    },
+  },
+  {
     name: "atlas_status_summary",
     kind: "status",
     description: "Implementation-status / completeness summary.",
@@ -99,6 +113,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     root?: string;
     projectId?: string | null;
     specId?: string;
+    path?: string;
     rule?: string;
     options?: Partial<GraphOptions>;
   };
@@ -106,6 +121,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     root: args.root ?? DEFAULT_ROOT,
     kind: tool.kind,
     specId: args.specId,
+    path: args.path,
     rule: args.rule,
     projectId: args.projectId ?? null,
     options: args.options,

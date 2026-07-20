@@ -4,6 +4,7 @@ import type {
   Orphans,
   QueryResult,
   SpecRelationships,
+  SpecsForFile,
   StatusSummary,
 } from "./types.js";
 
@@ -68,6 +69,15 @@ export function formatText(result: QueryResult): string {
       lines.push(`# ${d.orphans.length} orphaned spec(s)`);
       for (const id of d.orphans) {
         lines.push(`  ${id}`);
+      }
+      break;
+    }
+    case "file": {
+      const d = result.data as SpecsForFile;
+      const kindLabel = d.matches.length === 0 ? "" : ` ${d.matches[0].matchKind}`;
+      lines.push(`# specs for ${d.path} (${d.matches.length}${kindLabel})`);
+      for (const m of d.matches) {
+        lines.push(`  ${m.specId}  [${m.status ?? "—"}]  (${m.matchKind})`);
       }
       break;
     }
