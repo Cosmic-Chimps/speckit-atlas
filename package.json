@@ -2,7 +2,7 @@
   "name": "speckit-atlas",
   "displayName": "SpecKit Atlas",
   "description": "Render the relationships between GitHub Spec Kit specs alongside implementation status.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "CosmicChimps",
   "repository": "https://github.com/Cosmic-Chimps/speckit-atlas",
   "license": "MIT",
@@ -77,7 +77,7 @@
           "when": "editorIsOpen || resourceScheme == file"
         }
       ],
-      "editor/context": [
+      "editor/title/context": [
         {
           "command": "speckitAtlas.showSpecsForFile",
           "when": "resourceScheme == file",

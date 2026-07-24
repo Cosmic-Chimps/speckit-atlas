@@ -4,7 +4,7 @@ All notable changes to this extension are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.2] - 2026-07-24
 
 ### Added
 
@@ -17,8 +17,8 @@ All notable changes to this extension are documented here. The format follows
 
 - Show Specs for File (`013-show-specs-for-file`): the inverse of the Files list — from a source
   file, see which spec(s) reference it (code→spec reverse traceability). A new **SpecKit Atlas:
-  Show Specs for File** command (Command Palette, editor/Explorer context menus, and editor title
-  menu) lists the related spec(s) in a quick pick; each offers **Open spec** (read-only) and
+  Show Specs for File** command (Command Palette, editor tab and Explorer context menus, and
+  editor title menu) lists the related spec(s) in a quick pick; each offers **Open spec** (read-only) and
   **Reveal + focus on map** (selects the spec and scopes the map to it and its neighbors). The same
   lookup is available headlessly: `speckit-atlas specs-for-file <path>` and the MCP tool
   `atlas_specs_for_file`. Matches are derived purely from each spec's declared code references
